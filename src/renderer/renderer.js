@@ -97,7 +97,7 @@ function renderFontList() {
       <div class="font-info">
         <div class="font-name">${escapeHtml(font.name)}</div>
         <div class="font-status ${isRegistered ? "synced" : ""}">
-          ${isRegistered ? "✓ 동기화됨" : "동기화 필요"}
+          ${isRegistered ? "동기화됨" : "동기화 필요"}
         </div>
       </div>
       <div class="font-size">

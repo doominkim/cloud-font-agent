@@ -8,6 +8,7 @@ import {
   ipcMain,
 } from "electron";
 import * as path from "path";
+import { createCanvas } from "canvas";
 import { FontManager } from "./font-manager";
 import { SyncManager } from "./sync-manager";
 import { FontAPIClient } from "./api-client";
@@ -60,44 +61,26 @@ function createWindow() {
 function createTray() {
   console.log("Creating tray...");
 
-  // macOS 메뉴바용 템플릿 아이콘 생성 (16x16, 검은색 픽셀)
-  // Template 이미지는 자동으로 라이트/다크 모드에 맞춰 색상이 변경됨
-  const size = 16;
-  const canvas = Buffer.alloc(size * size * 4);
+  // macOS 메뉴바용 텍스트 기반 아이콘 생성
+  // "CF" (Cloud Font) 텍스트를 Canvas로 렌더링
+  const size = 22; // macOS 메뉴바 아이콘 권장 크기
+  const canvas = createCanvas(size, size);
+  const ctx = canvas.getContext("2d");
 
-  // 간단한 'F' 모양 그리기
-  const pixels = [
-    [2, 2],
-    [3, 2],
-    [4, 2],
-    [5, 2],
-    [2, 3],
-    [2, 4],
-    [2, 5],
-    [3, 5],
-    [4, 5],
-    [2, 6],
-    [2, 7],
-    [2, 8],
-    [2, 9],
-    [2, 10],
-    [2, 11],
-    [2, 12],
-    [2, 13],
-  ];
+  // 투명 배경
+  ctx.clearRect(0, 0, size, size);
 
-  pixels.forEach(([x, y]) => {
-    const offset = (y * size + x) * 4;
-    canvas[offset] = 0; // R
-    canvas[offset + 1] = 0; // G
-    canvas[offset + 2] = 0; // B
-    canvas[offset + 3] = 255; // A
-  });
+  // 텍스트 스타일 설정 (더 굵고 크게)
+  ctx.fillStyle = "#000000";
+  ctx.font = "900 16px -apple-system, BlinkMacSystemFont, sans-serif"; // 900 = extra bold
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
 
-  const icon = nativeImage.createFromBuffer(canvas, {
-    width: size,
-    height: size,
-  });
+  // "CF" 텍스트 그리기
+  ctx.fillText("CF", size / 2, size / 2 + 1); // 약간 아래로 조정
+
+  // Canvas를 이미지로 변환
+  const icon = nativeImage.createFromBuffer(canvas.toBuffer());
   icon.setTemplateImage(true); // macOS 템플릿 이미지로 설정
 
   tray = new Tray(icon);
@@ -122,13 +105,18 @@ function createTray() {
     },
   ]);
 
-  tray.setContextMenu(contextMenu);
-
   console.log("Tray created successfully");
 
+  // 왼쪽 클릭: 위젯 토글
   tray.on("click", () => {
     console.log("Tray clicked");
     toggleWindow();
+  });
+
+  // 오른쪽 클릭: 메뉴 표시
+  tray.on("right-click", () => {
+    console.log("Tray right-clicked");
+    tray!.popUpContextMenu(contextMenu);
   });
 }
 
@@ -151,10 +139,8 @@ function showWindow() {
   const windowBounds = mainWindow.getBounds();
   const { width: screenWidth } = screen.getPrimaryDisplay().workAreaSize;
 
-  // 메뉴바 아이콘 위치에 따라 윈도우 위치 계산
-  const x = Math.round(
-    trayBounds.x - windowBounds.width / 2 + trayBounds.width / 2
-  );
+  // 위젯의 왼쪽 끝을 트레이 아이콘의 왼쪽 끝에 정렬
+  const x = Math.round(trayBounds.x);
   const y = Math.round(trayBounds.y + trayBounds.height + 4);
 
   // 화면 밖으로 나가지 않도록 조정
