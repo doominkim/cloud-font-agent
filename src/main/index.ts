@@ -40,8 +40,10 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
 
-  // Open DevTools for debugging (comment out in production)
-  mainWindow.webContents.openDevTools({ mode: "detach" });
+  // Open DevTools only in development mode
+  if (process.env.NODE_ENV === "development") {
+    mainWindow.webContents.openDevTools({ mode: "detach" });
+  }
 
   mainWindow.on("blur", () => {
     if (mainWindow && !mainWindow.webContents.isDevToolsOpened()) {

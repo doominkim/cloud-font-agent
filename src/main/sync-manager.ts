@@ -167,6 +167,17 @@ export class SyncManager {
         fileName
       );
 
+      // If file already exists, delete it first (it might be read-only)
+      try {
+        await fs.promises.access(filePath);
+        // File exists, change permissions to writable and delete
+        await fs.promises.chmod(filePath, 0o600);
+        await fs.promises.unlink(filePath);
+        console.log(`Deleted existing file: ${filePath}`);
+      } catch (error) {
+        // File doesn't exist, which is fine
+      }
+
       // Write file to cache directory
       await fs.promises.writeFile(filePath, Buffer.from(response.data));
 
