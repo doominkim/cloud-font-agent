@@ -89,7 +89,7 @@
     - 진행률 업데이트 UI
     - _Requirements: 1.2, 1.3, 2.4, 2.5, 3.3_
 
-- [-] 5. 앱 생명주기 관리
+- [x] 5. 앱 생명주기 관리
 
   - before-quit에서 FontManager.cleanup() 호출
   - Font Cache Directory 초기화
