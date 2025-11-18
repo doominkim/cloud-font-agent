@@ -1,21 +1,24 @@
 import { app, BrowserWindow, Tray, screen, nativeImage, Menu } from "electron";
 import * as path from "path";
+import { FontManager } from "./font-manager";
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
+let fontManager: FontManager | null = null;
 
 function createWindow() {
+  // Requirements 5.1, 5.2, 5.3, 5.4, 5.5
   mainWindow = new BrowserWindow({
-    width: 400,
-    height: 600,
+    width: 400, // Requirement 5.1: 400px width
+    height: 600, // Requirement 5.1: 600px height
     show: false,
-    frame: false,
+    frame: true, // Requirement 5.4: Provide minimize and close buttons
     resizable: false,
     transparent: false,
     skipTaskbar: true,
-    alwaysOnTop: true,
+    alwaysOnTop: true, // Requirement 5.2: Always on top
     webPreferences: {
-      preload: path.join(__dirname, "../renderer/preload.js"),
+      preload: path.join(__dirname, "../renderer/preload.js"), // Preload script setup
       contextIsolation: true,
       nodeIntegration: false,
     },
@@ -29,8 +32,10 @@ function createWindow() {
     }
   });
 
+  // Requirement 5.5: When user closes the window, the app should quit
   mainWindow.on("closed", () => {
     mainWindow = null;
+    app.quit();
   });
 
   console.log("Window created");
@@ -146,8 +151,14 @@ function showWindow() {
 
 app.dock?.hide(); // Dock에서 앱 아이콘 숨기기
 
-app.on("ready", () => {
+app.on("ready", async () => {
   console.log("App ready");
+
+  // Initialize FontManager
+  // Requirement 7.1: Create Font Cache Directory
+  fontManager = new FontManager();
+  await fontManager.initialize();
+
   createTray();
   createWindow();
 });
@@ -156,6 +167,16 @@ app.on("window-all-closed", (e: Event) => {
   e.preventDefault();
 });
 
+// Requirement 5.5 & Task 3.1: before-quit event handler for cleanup
+// Requirements 4.1, 4.2, 4.3: Cleanup fonts on app quit
 app.on("before-quit", async () => {
   console.log("App is quitting...");
+
+  // Task 3.3: Call FontManager cleanup
+  // Requirement 4.1: Unregister all fonts
+  // Requirement 4.2: Delete all font files
+  // Requirement 4.3: Empty cache directory
+  if (fontManager) {
+    await fontManager.cleanup();
+  }
 });

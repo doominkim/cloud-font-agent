@@ -28,21 +28,21 @@
 
 - [ ] 3. Electron Main - 핵심 로직
 
-  - [ ] 3.1 위젯 창 설정
+  - [x] 3.1 위젯 창 설정
 
     - BrowserWindow 생성 (400x600, alwaysOnTop: true)
     - Preload 스크립트 설정
     - before-quit 이벤트 핸들러
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-  - [ ] 3.2 Mock API Client 구현
+  - [x] 3.2 Mock API Client 구현
 
     - fetchPurchasedFonts: 하드코딩된 폰트 목록 반환
     - 3개 샘플 폰트 (Noto Sans KR, Roboto, Open Sans)
     - 공개 GitHub URL 사용
     - _Requirements: 1.1, 1.2, 8.1, 8.2, 8.3, 8.4, 8.5_
 
-  - [ ] 3.3 FontManager 구현
+  - [x] 3.3 FontManager 구현
 
     - registerFont: Native Module 호출 + 상태 관리
     - getRegisteredFonts: 등록된 폰트 목록 반환
