@@ -4,6 +4,7 @@ let registeredFonts = [];
 
 // DOM elements
 let syncButton;
+let closeButton;
 let fontList;
 let emptyState;
 let progressContainer;
@@ -18,6 +19,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Get DOM element references
   syncButton = document.getElementById("syncButton");
+  closeButton = document.getElementById("closeButton");
   fontList = document.getElementById("fontList");
   emptyState = document.getElementById("emptyState");
   progressContainer = document.getElementById("progressContainer");
@@ -26,6 +28,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Set up event listeners
   syncButton.addEventListener("click", handleSyncClick);
+  closeButton.addEventListener("click", handleCloseClick);
 
   // Register sync progress listener
   window.fontAPI.onSyncProgress(handleSyncProgress);
@@ -182,6 +185,14 @@ function handleSyncProgress(progress) {
   progressText.textContent = `${progress.current} (${progress.completed}/${progress.total})`;
 
   console.log(`Sync progress: ${progress.percentage}% - ${progress.current}`);
+}
+
+/**
+ * Handle close button click
+ * Hides the window instead of quitting the app
+ */
+function handleCloseClick() {
+  window.close();
 }
 
 /**

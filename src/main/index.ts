@@ -24,8 +24,9 @@ function createWindow() {
     width: 400, // Requirement 5.1: 400px width
     height: 600, // Requirement 5.1: 600px height
     show: false,
-    frame: true, // Requirement 5.4: Provide minimize and close buttons
-    resizable: false,
+    frame: false, // Frameless window for widget style
+    resizable: false, // Cannot resize
+    movable: false, // Cannot move - stays under tray icon
     transparent: false,
     skipTaskbar: true,
     alwaysOnTop: true, // Requirement 5.2: Always on top
@@ -37,6 +38,9 @@ function createWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
+
+  // Open DevTools for debugging (comment out in production)
+  mainWindow.webContents.openDevTools({ mode: "detach" });
 
   mainWindow.on("blur", () => {
     if (mainWindow && !mainWindow.webContents.isDevToolsOpened()) {

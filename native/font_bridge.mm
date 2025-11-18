@@ -27,6 +27,19 @@ Napi::Value RegisterFont(const Napi::CallbackInfo& info) {
     return env.Null();
   }
   
+  // Try to unregister first in case font is already registered from previous session
+  // This handles the case where app crashed and didn't clean up properly
+  CFErrorRef unregError = NULL;
+  CTFontManagerUnregisterFontsForURL(
+    (__bridge CFURLRef)fontURL,
+    kCTFontManagerScopeUser,
+    &unregError
+  );
+  if (unregError) {
+    // Ignore error - font might not have been registered
+    CFRelease(unregError);
+  }
+  
   // Register font with user scope (available to all apps)
   // Requirement 3.1: Fonts must be available in all macOS applications
   CFErrorRef error = NULL;
