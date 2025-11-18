@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Native module build artifacts
+*.node
+*.o
+*.a
+
+# macOS
+.DS_Store
+
+# Electron
+out/
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Environment
+.env

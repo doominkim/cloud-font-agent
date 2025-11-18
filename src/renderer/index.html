@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'"
+    />
+    <title>Cloud Font Agent</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="header">
+      <h2>내 폰트</h2>
+      <button id="syncButton" class="sync-button">동기화</button>
+    </div>
+
+    <div id="progressContainer" style="display: none">
+      <div class="progress-bar">
+        <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+      </div>
+      <p
+        id="progressText"
+        style="text-align: center; margin-top: 5px; font-size: 12px"
+      ></p>
+    </div>
+
+    <ul id="fontList" class="font-list"></ul>
+
+    <script src="renderer.js"></script>
+  </body>
+</html>
