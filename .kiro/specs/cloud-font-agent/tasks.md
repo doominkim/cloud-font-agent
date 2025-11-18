@@ -2,7 +2,7 @@
 
 ## 목표: 위젯에서 폰트 목록 조회 → 동기화 버튼 → 포토샵/일러스트 사용 검증
 
-- [x] 1. 프로젝트 초기 설정
+- [ ] 1. 프로젝트 초기 설정
 
   - Electron + TypeScript 프로젝트 초기화
   - 기본 의존성 설치 (electron, typescript, node-addon-api, node-gyp)
@@ -10,16 +10,16 @@
   - package.json 스크립트 설정
   - _Requirements: 6.1, 6.2_
 
-- [ ] 2. Native Module - 폰트 등록/해제만
+- [-] 2. Native Module - 폰트 등록/해제만
 
-  - [ ] 2.1 Objective-C++ 브릿지 설정
+  - [x] 2.1 Objective-C++ 브릿지 설정
 
     - binding.gyp 작성
     - CoreText, Foundation 프레임워크 링크
     - node-addon-api 설정
     - _Requirements: 6.2, 6.5_
 
-  - [ ] 2.2 폰트 등록/해제 함수 구현
+  - [x] 2.2 폰트 등록/해제 함수 구현
     - RegisterFont: CTFontManagerRegisterFontsForURL (kCTFontManagerScopeProcess)
     - UnregisterFont: CTFontManagerUnregisterFontsForURL
     - UnregisterAllFonts: 모든 등록된 폰트 해제
