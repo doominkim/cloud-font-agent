@@ -27,11 +27,12 @@ Napi::Value RegisterFont(const Napi::CallbackInfo& info) {
     return env.Null();
   }
   
-  // Register font with process scope
+  // Register font with user scope (available to all apps)
+  // Requirement 3.1: Fonts must be available in all macOS applications
   CFErrorRef error = NULL;
   bool success = CTFontManagerRegisterFontsForURL(
     (__bridge CFURLRef)fontURL,
-    kCTFontManagerScopeProcess,
+    kCTFontManagerScopeUser,
     &error
   );
   
@@ -73,11 +74,11 @@ Napi::Value UnregisterFont(const Napi::CallbackInfo& info) {
     return env.Null();
   }
   
-  // Unregister font
+  // Unregister font from user scope
   CFErrorRef error = NULL;
   bool success = CTFontManagerUnregisterFontsForURL(
     (__bridge CFURLRef)fontURL,
-    kCTFontManagerScopeProcess,
+    kCTFontManagerScopeUser,
     &error
   );
   
@@ -117,7 +118,7 @@ Napi::Value UnregisterAllFonts(const Napi::CallbackInfo& info) {
       CFErrorRef error = NULL;
       bool success = CTFontManagerUnregisterFontsForURL(
         (__bridge CFURLRef)fontURL,
-        kCTFontManagerScopeProcess,
+        kCTFontManagerScopeUser,
         &error
       );
       

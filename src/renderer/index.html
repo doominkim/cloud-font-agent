@@ -1,31 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self'"
     />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cloud Font Agent</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="header">
-      <h2>내 폰트</h2>
-      <button id="syncButton" class="sync-button">동기화</button>
-    </div>
-
-    <div id="progressContainer" style="display: none">
-      <div class="progress-bar">
-        <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+    <div class="container">
+      <!-- Header with title and sync button -->
+      <div class="header">
+        <h2 class="title">내 폰트</h2>
+        <button id="syncButton" class="sync-button">동기화</button>
       </div>
-      <p
-        id="progressText"
-        style="text-align: center; margin-top: 5px; font-size: 12px"
-      ></p>
-    </div>
 
-    <ul id="fontList" class="font-list"></ul>
+      <!-- Progress bar container -->
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text"></p>
+      </div>
+
+      <!-- Font list -->
+      <div class="font-list-container">
+        <ul id="fontList" class="font-list"></ul>
+        <div id="emptyState" class="empty-state">
+          <p>폰트를 불러오는 중...</p>
+        </div>
+      </div>
+    </div>
 
     <script src="renderer.js"></script>
   </body>

@@ -50,7 +50,7 @@
     - Font Cache Directory 생성 (~/.cloud-font-agent/.cache/)
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 7.1, 7.2, 7.3_
 
-  - [ ] 3.4 SyncManager 구현
+  - [x] 3.4 SyncManager 구현
 
     - syncAllFonts: 순차적으로 다운로드 + 등록
     - 다운로드: axios 또는 https 모듈 사용
@@ -67,7 +67,7 @@
 
 - [ ] 4. Renderer - 위젯 UI
 
-  - [ ] 4.1 HTML/CSS 작성
+  - [x] 4.1 HTML/CSS 작성
 
     - 헤더 (제목 + 동기화 버튼)
     - 폰트 목록 (이름, 상태, 파일 크기)
@@ -75,21 +75,21 @@
     - 간단한 스타일링
     - _Requirements: 1.2, 1.3, 5.1, 5.2, 5.3_
 
-  - [ ] 4.2 Preload 스크립트
+  - [x] 4.2 Preload 스크립트
 
     - contextBridge로 IPC API 노출
     - fetchFonts, getRegisteredFonts, syncFonts
     - onSyncProgress 이벤트 리스너
     - _Requirements: 6.1_
 
-  - [ ] 4.3 Renderer JavaScript
+  - [x] 4.3 Renderer JavaScript
     - 초기 로드 시 폰트 목록 조회
     - 폰트 목록 렌더링 (동기화 상태 표시)
     - 동기화 버튼 클릭 핸들러
     - 진행률 업데이트 UI
     - _Requirements: 1.2, 1.3, 2.4, 2.5, 3.3_
 
-- [ ] 5. 앱 생명주기 관리
+- [-] 5. 앱 생명주기 관리
 
   - before-quit에서 FontManager.cleanup() 호출
   - Font Cache Directory 초기화

@@ -1,10 +1,22 @@
-import { app, BrowserWindow, Tray, screen, nativeImage, Menu } from "electron";
+import {
+  app,
+  BrowserWindow,
+  Tray,
+  screen,
+  nativeImage,
+  Menu,
+  ipcMain,
+} from "electron";
 import * as path from "path";
 import { FontManager } from "./font-manager";
+import { SyncManager } from "./sync-manager";
+import { FontAPIClient } from "./api-client";
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let fontManager: FontManager | null = null;
+let syncManager: SyncManager | null = null;
+let apiClient: FontAPIClient | null = null;
 
 function createWindow() {
   // Requirements 5.1, 5.2, 5.3, 5.4, 5.5
@@ -151,6 +163,66 @@ function showWindow() {
 
 app.dock?.hide(); // Dock에서 앱 아이콘 숨기기
 
+// Task 3.5: IPC Handlers
+// Requirement 1.1, 6.1: IPC communication between main and renderer
+
+/**
+ * Setup IPC handlers for font operations
+ */
+function setupIpcHandlers() {
+  // Handler: fonts:fetch
+  // Requirement 1.1: Fetch purchased fonts from API
+  ipcMain.handle("fonts:fetch", async () => {
+    try {
+      if (!apiClient) {
+        throw new Error("API client not initialized");
+      }
+      const fonts = await apiClient.fetchPurchasedFonts();
+      return fonts;
+    } catch (error) {
+      console.error("Failed to fetch fonts:", error);
+      throw error;
+    }
+  });
+
+  // Handler: fonts:registered
+  // Get list of registered fonts
+  ipcMain.handle("fonts:registered", async () => {
+    try {
+      if (!fontManager) {
+        throw new Error("Font manager not initialized");
+      }
+      return fontManager.getRegisteredFonts();
+    } catch (error) {
+      console.error("Failed to get registered fonts:", error);
+      throw error;
+    }
+  });
+
+  // Handler: fonts:sync
+  // Requirement 2.1: Start synchronization
+  ipcMain.handle("fonts:sync", async () => {
+    try {
+      if (!syncManager || !apiClient) {
+        throw new Error("Sync manager or API client not initialized");
+      }
+
+      // Fetch fonts to sync
+      const fonts = await apiClient.fetchPurchasedFonts();
+
+      // Start synchronization
+      const result = await syncManager.syncAllFonts(fonts);
+
+      return result;
+    } catch (error) {
+      console.error("Failed to sync fonts:", error);
+      throw error;
+    }
+  });
+
+  console.log("IPC handlers registered");
+}
+
 app.on("ready", async () => {
   console.log("App ready");
 
@@ -159,8 +231,22 @@ app.on("ready", async () => {
   fontManager = new FontManager();
   await fontManager.initialize();
 
+  // Initialize API Client
+  // Task 3.2: Mock API Client
+  apiClient = new FontAPIClient();
+
   createTray();
   createWindow();
+
+  // Initialize SyncManager after window is created
+  // Task 3.4: SyncManager implementation
+  if (mainWindow) {
+    syncManager = new SyncManager(fontManager, mainWindow);
+  }
+
+  // Setup IPC handlers
+  // Task 3.5: IPC handler implementation
+  setupIpcHandlers();
 });
 
 app.on("window-all-closed", (e: Event) => {
