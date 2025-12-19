@@ -7,6 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 import { promisify } from "util";
+import { FontSecurity } from "./font-security";
 
 const mkdir = promisify(fs.mkdir);
 const unlink = promisify(fs.unlink);
@@ -42,15 +43,20 @@ export interface RegisteredFont {
 export class FontManager {
   private registeredFonts: Map<string, RegisteredFont>;
   private cacheDirectory: string;
+  private fontSecurity: FontSecurity;
 
   constructor() {
     this.registeredFonts = new Map();
     // Requirement 7.1: Create cache directory in user data directory
-    this.cacheDirectory = path.join(
-      os.homedir(),
-      ".cloud-font-agent",
-      ".cache"
-    );
+    this.cacheDirectory = path.join(os.homedir(), ".cloud-font-agent");
+
+    // Initialize enhanced security
+    this.fontSecurity = new FontSecurity(this.cacheDirectory, {
+      enableFileWatcher: true,
+      enableObfuscation: true,
+      enablePermissionHardening: true,
+      watcherSensitivity: 2000, // 2 seconds
+    });
   }
 
   /**
@@ -61,14 +67,14 @@ export class FontManager {
    */
   async initialize(): Promise<void> {
     try {
-      // Create cache directory with restricted permissions (0700)
-      // Requirement 7.1: Cache directory in user data directory
-      await mkdir(this.cacheDirectory, { recursive: true, mode: 0o700 });
-      console.log(`Font cache directory created: ${this.cacheDirectory}`);
+      // Initialize secure directory structure
+      await this.fontSecurity.initializeSecureDirectory();
 
       // Clean up any leftover files from previous sessions
       // Requirement 4.5: Clean up on next run if previous cleanup failed
-      await this.cleanupCacheDirectory();
+      await this.fontSecurity.cleanup();
+
+      console.log("FontManager initialized with enhanced security");
     } catch (error) {
       console.error("Failed to initialize FontManager:", error);
       throw error;
@@ -147,7 +153,29 @@ export class FontManager {
    * @returns Absolute path to cache directory
    */
   getCacheDirectory(): string {
-    return this.cacheDirectory;
+    return this.fontSecurity.getSecurityStatus().secureDirectory;
+  }
+
+  /**
+   * Get secure file path for font storage
+   *
+   * @param fontId - Font identifier
+   * @param extension - File extension
+   * @returns Secure file path with obfuscated filename
+   */
+  getSecureFilePath(fontId: string, extension: string): string {
+    return this.fontSecurity.getSecureFilePath(fontId, extension);
+  }
+
+  /**
+   * Force cleanup of cache directory
+   * Useful for manual cleanup or debugging
+   *
+   * @returns Promise that resolves when cleanup is complete
+   */
+  async forceCleanupCache(): Promise<void> {
+    console.log("Force cleaning cache directory...");
+    await this.cleanupCacheDirectory();
   }
 
   /**
@@ -170,10 +198,10 @@ export class FontManager {
       // Clear in-memory tracking
       this.registeredFonts.clear();
 
-      // Requirement 4.2: Delete all font files from cache
-      await this.cleanupCacheDirectory();
+      // Requirement 4.2: Secure cleanup of all font files
+      await this.fontSecurity.cleanup();
 
-      console.log("FontManager cleanup completed");
+      console.log("FontManager cleanup completed with enhanced security");
     } catch (error) {
       console.error("Error during FontManager cleanup:", error);
       // Don't throw - we want cleanup to complete as much as possible
@@ -196,6 +224,9 @@ export class FontManager {
         try {
           const stats = await stat(filePath);
           if (stats.isFile()) {
+            // Change permissions to writable before deletion
+            // Font files are set to read-only (0400) during registration
+            await chmod(filePath, 0o600);
             await unlink(filePath);
             console.log(`Deleted font file: ${filePath}`);
           }
@@ -221,6 +252,14 @@ export class FontManager {
    */
   private async deleteFontFile(filePath: string): Promise<void> {
     try {
+      // Change permissions to writable before deletion
+      // Font files might be set to read-only (0400)
+      try {
+        await chmod(filePath, 0o600);
+      } catch (chmodError) {
+        // File might not exist or already writable, continue with deletion
+      }
+
       await unlink(filePath);
       console.log(`Deleted font file: ${filePath}`);
     } catch (error) {

@@ -159,13 +159,9 @@ export class SyncManager {
       const urlExt = path.extname(font.downloadUrl).toLowerCase();
       const extension = [".ttf", ".otf"].includes(urlExt) ? urlExt : ".ttf";
 
-      // Generate unique filename
-      // Requirement 2.2: Save to Font Cache Directory
-      const fileName = `${font.id}${extension}`;
-      const filePath = path.join(
-        this.fontManager.getCacheDirectory(),
-        fileName
-      );
+      // Generate secure filename with obfuscation
+      // Requirement 2.2: Save to Font Cache Directory with enhanced security
+      const filePath = this.fontManager.getSecureFilePath(font.id, extension);
 
       // If file already exists, delete it first (it might be read-only)
       try {
