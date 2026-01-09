@@ -118,21 +118,18 @@ export class FontSecurity {
    * Apply strict permissions to directory hierarchy
    */
   private async hardenDirectoryPermissions(): Promise<void> {
-    const pathParts = this.secureDirectory.split(path.sep);
-    let currentPath = "";
-
-    for (const part of pathParts) {
-      if (!part) continue;
-
-      currentPath = path.join(currentPath, part);
-
-      try {
-        // Set restrictive permissions (owner only, no group/other access)
-        await chmod(currentPath, 0o700);
-      } catch (error) {
-        // Continue if permission setting fails (might not own parent dirs)
-        console.warn(`Could not set permissions on ${currentPath}:`, error);
-      }
+    // Only set permissions on the secure directory itself
+    // Don't try to modify parent directories we don't own
+    try {
+      await chmod(this.secureDirectory, 0o700);
+      console.log(
+        `Set permissions on secure directory: ${this.secureDirectory}`
+      );
+    } catch (error) {
+      console.warn(
+        `Could not set permissions on ${this.secureDirectory}:`,
+        error
+      );
     }
   }
 

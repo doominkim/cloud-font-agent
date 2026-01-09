@@ -1,0 +1,64 @@
+{
+  "provider": "Boritype",
+  "displayName": "보리타입",
+  "description": "Boritype 폰트 컬렉션",
+  "previewFont": "BoriHellofluff.ttf",
+  "website": "https://boritype.com",
+  "fonts": [
+    {
+      "name": "보리 헬로플러프",
+      "weight": "Regular",
+      "style": "Normal",
+      "files": [
+        {
+          "file": "BoriHellofluff.ttf",
+          "format": "truetype"
+        }
+      ]
+    },
+    {
+      "name": "보리 잇츠먼데이",
+      "weight": "Regular",
+      "style": "Normal",
+      "files": [
+        {
+          "file": "BoriItsmonday.ttf",
+          "format": "truetype"
+        }
+      ]
+    },
+    {
+      "name": "보리 쭈루냥",
+      "weight": "Regular",
+      "style": "Normal",
+      "files": [
+        {
+          "file": "BoriJjuruNyang.ttf",
+          "format": "truetype"
+        }
+      ]
+    },
+    {
+      "name": "보리 라이프로그",
+      "weight": "Regular",
+      "style": "Normal",
+      "files": [
+        {
+          "file": "BoriLifelog.ttf",
+          "format": "truetype"
+        }
+      ]
+    },
+    {
+      "name": "보리 마이고미",
+      "weight": "Regular",
+      "style": "Normal",
+      "files": [
+        {
+          "file": "BoriMygomi.ttf",
+          "format": "truetype"
+        }
+      ]
+    }
+  ]
+}

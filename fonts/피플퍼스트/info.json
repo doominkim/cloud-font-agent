@@ -1,0 +1,54 @@
+{
+  "provider": "피플퍼스트",
+  "displayName": "피플퍼스트",
+  "description": "피플퍼스트 폰트 컬렉션",
+  "previewFont": "PeoplefirstFighting-Regular.ttf",
+  "website": "https://peoplefirst.co.kr",
+  "fonts": [
+    {
+      "name": "피플퍼스트 파이팅",
+      "weight": "Regular",
+      "style": "Normal",
+      "files": [
+        {
+          "file": "PeoplefirstFighting-Regular.ttf",
+          "format": "truetype"
+        },
+        {
+          "file": "PeoplefirstFighting-Regular.otf",
+          "format": "opentype"
+        }
+      ]
+    },
+    {
+      "name": "피플퍼스트 IL",
+      "weight": "Regular",
+      "style": "Normal",
+      "files": [
+        {
+          "file": "PeoplefirstILTTF.ttf",
+          "format": "truetype"
+        },
+        {
+          "file": "PeoplefirstIL.otf",
+          "format": "opentype"
+        }
+      ]
+    },
+    {
+      "name": "피플퍼스트 Neat & Loud",
+      "weight": "Regular",
+      "style": "Normal",
+      "files": [
+        {
+          "file": "PeoplefirstNeat&LoudTTF.ttf",
+          "format": "truetype"
+        },
+        {
+          "file": "PeoplefirstNeat&Loud.otf",
+          "format": "opentype"
+        }
+      ]
+    }
+  ]
+}

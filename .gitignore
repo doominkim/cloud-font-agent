@@ -26,3 +26,10 @@ logs/
 
 # Environment
 .env
+
+# Fonts (exclude actual font files, keep README)
+fonts/*.ttf
+fonts/*.otf
+fonts/*.woff
+fonts/*.woff2
+!fonts/README.md

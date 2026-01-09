@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm run build:ts && npm run copy:assets && npm run build:native",
     "build:ts": "tsc",
-    "copy:assets": "cp src/renderer/index.html dist/renderer/ && cp -r src/renderer/styles dist/renderer/ && cp src/renderer/login.html dist/renderer/ && cp src/renderer/login.js dist/renderer/",
+    "copy:assets": "cp src/renderer/index.html dist/renderer/ && cp -r src/renderer/styles dist/renderer/ && cp src/renderer/login.html dist/renderer/ && cp src/renderer/login.js dist/renderer/ && mkdir -p dist/fonts && cp -r fonts/* dist/fonts/ 2>/dev/null || true",
     "build:native": "node-gyp rebuild",
     "dev": "npm run build:ts && npm run copy:assets && electron .",
     "start": "electron .",
@@ -49,6 +49,7 @@
     },
     "files": [
       "dist/**/*",
+      "fonts/**/*",
       "build/Release/**/*",
       "!dist/builder-*",
       "!dist/*.dmg",

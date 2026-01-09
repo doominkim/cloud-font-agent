@@ -1,0 +1,24 @@
+{
+  "provider": "Kimmin",
+  "displayName": "김민",
+  "description": "Kimmin 폰트 컬렉션",
+  "previewFont": "Hola-Light.otf",
+  "website": "https://kimmin.com",
+  "fonts": [
+    {
+      "name": "Hola Light",
+      "weight": "Light",
+      "style": "Normal",
+      "files": [
+        {
+          "file": "HolaTTF-Light.ttf",
+          "format": "truetype"
+        },
+        {
+          "file": "Hola-Light.otf",
+          "format": "opentype"
+        }
+      ]
+    }
+  ]
+}

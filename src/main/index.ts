@@ -305,24 +305,47 @@ function setupIpcHandlers() {
           return { success: true, message: "Font already registered" };
         }
 
-        // Download font file
-        const response = await axios.get(downloadUrl, {
-          responseType: "arraybuffer",
-          timeout: 60000,
-        });
+        let fontData: Buffer;
+        let extension: string;
 
-        // Determine file extension
-        const urlExt = path.extname(downloadUrl).toLowerCase();
-        const extension = [".ttf", ".otf"].includes(urlExt) ? urlExt : ".ttf";
+        // Check if downloadUrl is a local file or remote URL
+        if (downloadUrl.startsWith("file://")) {
+          // Local file: read directly from filesystem
+          const localFilePath = downloadUrl.replace("file://", "");
+          console.log(`Reading local font file: ${localFilePath}`);
 
-        // Generate secure filename
-        const filePath = fontManager.getSecureFilePath(fontId, extension);
+          fontData = await fs.promises.readFile(localFilePath);
+          extension = path.extname(localFilePath).toLowerCase();
+        } else {
+          // Remote URL: download via HTTP
+          console.log(`Downloading font from: ${downloadUrl}`);
 
-        // Write file to cache directory
-        await fs.promises.writeFile(filePath, Buffer.from(response.data));
+          const response = await axios.get(downloadUrl, {
+            responseType: "arraybuffer",
+            timeout: 60000,
+          });
+
+          fontData = Buffer.from(response.data);
+
+          // Determine file extension from URL
+          const urlExt = path.extname(downloadUrl).toLowerCase();
+          extension = [".ttf", ".otf"].includes(urlExt) ? urlExt : ".ttf";
+        }
+
+        // Validate extension
+        if (![".ttf", ".otf"].includes(extension)) {
+          throw new Error(`Unsupported font format: ${extension}`);
+        }
+
+        // Generate secure filename in cache directory
+        const cacheFilePath = fontManager.getSecureFilePath(fontId, extension);
+
+        // Write font data to cache directory
+        await fs.promises.writeFile(cacheFilePath, fontData);
+        console.log(`Font file cached at: ${cacheFilePath}`);
 
         // Register font with system
-        await fontManager.registerFont(filePath, fontName);
+        await fontManager.registerFont(cacheFilePath, fontName);
 
         console.log(`Font registered successfully: ${fontName}`);
         return { success: true, message: "Font registered successfully" };

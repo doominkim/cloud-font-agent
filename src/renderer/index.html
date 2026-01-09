@@ -380,6 +380,29 @@
     <script>
       console.log("App loaded");
 
+      // Window controls
+      document
+        .querySelector(".window-controls__button--close")
+        ?.addEventListener("click", () => {
+          window.close();
+        });
+
+      document
+        .querySelector(".window-controls__button--minimize")
+        ?.addEventListener("click", () => {
+          if (window.electronAPI) {
+            window.electronAPI.minimize();
+          }
+        });
+
+      document
+        .querySelector(".window-controls__button--maximize")
+        ?.addEventListener("click", () => {
+          if (window.electronAPI) {
+            window.electronAPI.maximize();
+          }
+        });
+
       // Application state
       let allFonts = [];
       let registeredFontIds = new Set();
@@ -440,38 +463,22 @@
         });
       }
 
-      // Extract provider info from font name
-      function extractProviderInfo(fontName) {
-        const providerMap = {
-          탱타입: { ko: "탱타입", en: "Taengtype", id: "taengtype" },
-          eighttype: { ko: "eighttype", en: "에잇타입", id: "eighttype" },
-          뉴타입: { ko: "⚡ 뉴타입", en: "⚡ 뉴타입", id: "newtype" },
-          활자도서관: { ko: "활자도서관", en: "활자도서관", id: "fontlibrary" },
-          활책명조: { ko: "활자도서관", en: "활자도서관", id: "fontlibrary" },
-        };
-
-        for (const [key, value] of Object.entries(providerMap)) {
-          if (fontName.includes(key)) {
-            return value;
-          }
-        }
-
-        return { ko: "Unknown", en: "Unknown", id: "unknown" };
-      }
-
       // Group fonts by provider
+      // Uses provider metadata from API (info.json)
       function groupFontsByProvider(fonts) {
         const groups = {};
 
         fonts.forEach((font) => {
-          const provider = extractProviderInfo(font.name);
-          const providerId = provider.id;
+          // Use provider field from API (from info.json)
+          const providerId = font.provider || "unknown";
+          const displayName = font.displayName || providerId;
+          const previewFont = font.previewFont;
 
           if (!groups[providerId]) {
             groups[providerId] = {
               id: providerId,
-              nameKo: provider.ko,
-              nameEn: provider.en,
+              displayName: displayName,
+              previewFont: previewFont,
               fonts: [],
             };
           }
@@ -506,15 +513,23 @@
         groups.forEach((group, index) => {
           const isExpanded = index === groups.length - 1; // Last group expanded by default
 
+          // Extract font family name from preview font file
+          // Remove file extension to get the font family name
+          const previewFontFamily = group.previewFont
+            ? group.previewFont.replace(/\.(ttf|otf)$/i, "")
+            : null;
+
           html += `
             <div class="provider-group" data-provider-id="${group.id}">
               <div class="provider-group__header">
                 <h3 class="provider-group__name">
-                  <span class="provider-group__name-preview" style="font-family: '${
-                    group.nameKo
-                  }', sans-serif;">${group.nameKo}</span>
+                  ${
+                    previewFontFamily
+                      ? `<span class="provider-group__name-preview" style="font-family: '${previewFontFamily}', sans-serif;">${group.displayName}</span>`
+                      : ""
+                  }
                   <span class="provider-group__name-original">${
-                    group.nameKo
+                    group.displayName
                   }</span>
                 </h3>
                 <button class="provider-group__toggle">${
@@ -528,10 +543,18 @@
 
           group.fonts.forEach((font) => {
             const isEnabled = registeredFontIds.has(font.id);
+
+            // Extract font family name for styling
+            const fontFamily = font.name
+              .replace(/\s+(Regular|Bold|Light|Medium|Italic|Normal)$/i, "")
+              .trim();
+
             html += `
               <div class="font-item" data-font-id="${font.id}">
                 <div class="font-item__info">
-                  <div class="font-item__name">${font.name}</div>
+                  <div class="font-item__name" style="font-family: '${fontFamily}', sans-serif;">${
+              font.name
+            }</div>
                 </div>
                 <div class="font-item__actions">
                   <button class="font-item__info-btn" data-font-id="${
@@ -665,6 +688,11 @@
       async function loadFonts() {
         try {
           console.log("Loading fonts...");
+          console.log("window.fontAPI:", window.fontAPI);
+
+          if (!window.fontAPI) {
+            throw new Error("fontAPI is not available");
+          }
 
           // Fetch purchased fonts
           const purchasedFonts = await window.fontAPI.fetchFonts();
@@ -680,6 +708,9 @@
           // Store all fonts
           allFonts = purchasedFonts;
 
+          // Load font faces dynamically
+          await loadFontFaces(purchasedFonts);
+
           // Render fonts
           renderFonts(purchasedFonts);
 
@@ -690,6 +721,63 @@
           console.error("Failed to load fonts:", error);
           alert(`폰트 목록을 불러오는데 실패했습니다.\n${error.message}`);
         }
+      }
+
+      // Load font faces dynamically using @font-face
+      async function loadFontFaces(fonts) {
+        const style = document.createElement("style");
+        let css = "";
+        const loadedFamilies = new Set();
+
+        fonts.forEach((font) => {
+          // Extract font family name from font name (remove weight/style info)
+          const fontFamily = font.name
+            .replace(/\s+(Regular|Bold|Light|Medium|Italic|Normal)$/i, "")
+            .trim();
+
+          // Create @font-face rule for each font
+          css += `
+            @font-face {
+              font-family: '${fontFamily}';
+              src: url('${font.downloadUrl}');
+              font-display: swap;
+            }
+          `;
+
+          // Also load preview font for provider if available
+          if (font.previewFont && font.provider) {
+            const previewFontFamily = font.previewFont.replace(
+              /\.(ttf|otf)$/i,
+              ""
+            );
+
+            // Only add once per provider
+            if (!loadedFamilies.has(previewFontFamily)) {
+              loadedFamilies.add(previewFontFamily);
+
+              // Find the preview font file in the fonts array
+              const previewFontFile = fonts.find(
+                (f) =>
+                  f.provider === font.provider &&
+                  f.downloadUrl.includes(font.previewFont)
+              );
+
+              if (previewFontFile) {
+                css += `
+                  @font-face {
+                    font-family: '${previewFontFamily}';
+                    src: url('${previewFontFile.downloadUrl}');
+                    font-display: swap;
+                  }
+                `;
+              }
+            }
+          }
+        });
+
+        style.textContent = css;
+        document.head.appendChild(style);
+        console.log(`Loaded ${fonts.length} font faces`);
       }
 
       // Initialize
