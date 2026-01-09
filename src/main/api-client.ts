@@ -73,7 +73,7 @@ export class FontAPIClient {
   /**
    * Get default font directory based on environment
    * Development: ./fonts in project root
-   * Production: Hidden system directory
+   * Production: fonts folder in app resources
    */
   private getDefaultFontDirectory(): string {
     const isDevelopment = !app.isPackaged;
@@ -82,14 +82,10 @@ export class FontAPIClient {
       // Development: use fonts folder in project root
       return path.join(process.cwd(), "fonts");
     } else {
-      // Production: use hidden system directory
-      // This can be customized based on deployment strategy
-      return path.join(
-        app.getPath("userData"),
-        ".system",
-        ".fonts",
-        ".library"
-      );
+      // Production: use fonts folder in app resources
+      // In packaged app, resources are in app.asar or app.asar.unpacked
+      const resourcesPath = process.resourcesPath;
+      return path.join(resourcesPath, "fonts");
     }
   }
 

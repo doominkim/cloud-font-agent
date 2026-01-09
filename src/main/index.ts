@@ -44,9 +44,19 @@ function createWindow() {
 
   // Check if user is authenticated
   // Requirement 10.1: Navigate to main app if authenticated, otherwise show login
-  if (authManager && authManager.isAuthenticated()) {
+  // DEV MODE: Skip authentication check in development
+  const isDevelopment = !app.isPackaged;
+  const skipAuth = process.env.SKIP_AUTH === "true" || isDevelopment;
+
+  if (skipAuth || (authManager && authManager.isAuthenticated())) {
+    console.log(
+      skipAuth
+        ? "DEV MODE: Skipping authentication"
+        : "User authenticated, loading main app"
+    );
     mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
   } else {
+    console.log("User not authenticated, loading login page");
     mainWindow.loadFile(path.join(__dirname, "../renderer/login.html"));
   }
 
@@ -241,10 +251,12 @@ function setupIpcHandlers() {
   // Requirement 1.1: Fetch purchased fonts from API
   ipcMain.handle("fonts:fetch", async () => {
     try {
+      console.log("IPC: fonts:fetch called");
       if (!apiClient) {
         throw new Error("API client not initialized");
       }
       const fonts = await apiClient.fetchPurchasedFonts();
+      console.log(`IPC: fonts:fetch returning ${fonts.length} fonts`);
       return fonts;
     } catch (error) {
       console.error("Failed to fetch fonts:", error);
@@ -256,10 +268,13 @@ function setupIpcHandlers() {
   // Get list of registered fonts
   ipcMain.handle("fonts:registered", async () => {
     try {
+      console.log("IPC: fonts:registered called");
       if (!fontManager) {
         throw new Error("Font manager not initialized");
       }
-      return fontManager.getRegisteredFonts();
+      const registered = fontManager.getRegisteredFonts();
+      console.log(`IPC: fonts:registered returning ${registered.length} fonts`);
+      return registered;
     } catch (error) {
       console.error("Failed to get registered fonts:", error);
       throw error;
@@ -293,6 +308,9 @@ function setupIpcHandlers() {
     "fonts:register",
     async (_event, fontId: string, downloadUrl: string, fontName: string) => {
       try {
+        console.log(
+          `IPC: fonts:register called - fontId: ${fontId}, fontName: ${fontName}`
+        );
         if (!fontManager) {
           throw new Error("Font manager not initialized");
         }
@@ -362,6 +380,7 @@ function setupIpcHandlers() {
   // Requirement 4.3: Unregister individual font
   ipcMain.handle("fonts:unregister", async (_event, fontId: string) => {
     try {
+      console.log(`IPC: fonts:unregister called - fontId: ${fontId}`);
       if (!fontManager) {
         throw new Error("Font manager not initialized");
       }

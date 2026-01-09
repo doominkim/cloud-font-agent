@@ -229,8 +229,18 @@ export class AuthManager {
       }
 
       this.currentToken = token;
-      // Note: In production, you would validate the token with the server
+
+      // Create a mock user for development
+      // In production, you would validate the token with the server
       // and fetch the current user data
+      this.currentUser = {
+        id: "saved_user",
+        email: "saved@example.com",
+        name: "Saved User",
+        createdAt: new Date(),
+      };
+
+      console.log("Loaded saved token and user");
     } catch (error) {
       console.error("Failed to load saved token:", error);
     }

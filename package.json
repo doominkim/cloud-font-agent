@@ -55,6 +55,18 @@
       "!dist/*.dmg",
       "!dist/*.blockmap"
     ],
+    "asarUnpack": [
+      "fonts/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "fonts",
+        "to": "fonts",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
     "compression": "maximum"
   }
 }

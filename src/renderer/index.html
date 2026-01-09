@@ -378,7 +378,9 @@
     </div>
 
     <script>
+      console.log("=== SCRIPT LOADED ===");
       console.log("App loaded");
+      console.log("window.fontAPI:", window.fontAPI);
 
       // Window controls
       document
@@ -491,8 +493,17 @@
 
       // Render fonts to UI
       function renderFonts(fonts) {
+        console.log("=== Rendering fonts ===");
+        console.log("Number of fonts to render:", fonts.length);
+
         const container = document.getElementById("fontListContainer");
+        if (!container) {
+          console.error("Font list container not found!");
+          return;
+        }
+
         const groups = groupFontsByProvider(fonts);
+        console.log("Number of provider groups:", groups.length);
 
         let html = '<div class="font-list">';
 
@@ -560,12 +571,12 @@
                   <button class="font-item__info-btn" data-font-id="${
                     font.id
                   }">ⓘ</button>
-                  <div class="toggle">
+                  <label class="toggle" for="toggle-${font.id}">
                     <input type="checkbox" class="toggle__input" id="toggle-${
                       font.id
                     }" ${isEnabled ? "checked" : ""} data-font-id="${font.id}">
                     <span class="toggle__slider"></span>
-                  </div>
+                  </label>
                 </div>
               </div>
             `;
@@ -580,72 +591,114 @@
         html += "</div>";
         container.innerHTML = html;
 
-        setupEventListeners();
+        // Wait for DOM to be fully updated before setting up listeners
+        setTimeout(() => {
+          setupEventListeners();
+        }, 0);
       }
 
       // Setup event listeners
       function setupEventListeners() {
+        console.log("=== Setting up event listeners ===");
+        console.log(
+          "Container HTML length:",
+          document.getElementById("fontListContainer").innerHTML.length
+        );
+        console.log(
+          "Font list exists:",
+          !!document.querySelector(".font-list")
+        );
+
         setupSearch();
 
         // Provider group toggle
-        document
-          .querySelectorAll(".provider-group__header")
-          .forEach((header) => {
-            header.addEventListener("click", (e) => {
-              const group = e.currentTarget.closest(".provider-group");
-              const fonts = group.querySelector(".provider-group__fonts");
-              const toggle = group.querySelector(".provider-group__toggle");
+        const providerHeaders = document.querySelectorAll(
+          ".provider-group__header"
+        );
+        console.log("Found provider headers:", providerHeaders.length);
 
-              if (fonts.style.display === "none") {
-                fonts.style.display = "block";
-                toggle.textContent = "▲";
-              } else {
-                fonts.style.display = "none";
-                toggle.textContent = "▼";
-              }
-            });
+        providerHeaders.forEach((header) => {
+          header.addEventListener("click", (e) => {
+            const group = e.currentTarget.closest(".provider-group");
+            const fonts = group.querySelector(".provider-group__fonts");
+            const toggle = group.querySelector(".provider-group__toggle");
+
+            if (fonts.style.display === "none") {
+              fonts.style.display = "block";
+              toggle.textContent = "▲";
+            } else {
+              fonts.style.display = "none";
+              toggle.textContent = "▼";
+            }
           });
+        });
 
         // Toggle switches - Font registration/unregistration
-        document.querySelectorAll(".toggle__input").forEach((toggle) => {
-          toggle.addEventListener("change", async (e) => {
-            const fontId = e.target.dataset.fontId;
-            const isEnabled = e.target.checked;
+        const toggleInputs = document.querySelectorAll(".toggle__input");
+        console.log("Found toggle inputs:", toggleInputs.length);
 
-            console.log("Toggle:", fontId, isEnabled);
+        toggleInputs.forEach((toggle, index) => {
+          console.log(
+            `Setting up toggle ${index}, fontId:`,
+            toggle.dataset.fontId
+          );
+
+          // Add click listener to the label for debugging
+          const label = toggle.closest(".toggle");
+          if (label) {
+            label.addEventListener("click", (e) => {
+              console.log("Label clicked for font:", toggle.dataset.fontId);
+            });
+          }
+
+          toggle.addEventListener("change", async (e) => {
+            const target = e.target;
+            const fontId = target.dataset.fontId;
+            const isEnabled = target.checked;
+
+            console.log("Toggle clicked:", fontId, isEnabled);
 
             // Find the font
             const font = allFonts.find((f) => f.id === fontId);
             if (!font) {
               console.error("Font not found:", fontId);
+              target.checked = !isEnabled; // Revert
               return;
             }
 
+            console.log("Font found:", font);
+
             // Disable toggle during operation
-            e.target.disabled = true;
+            target.disabled = true;
 
             try {
               if (isEnabled) {
                 // Register font
+                console.log("Registering font:", font.name, font.downloadUrl);
                 const result = await window.fontAPI.registerFont(
                   fontId,
                   font.downloadUrl,
                   font.name
                 );
 
+                console.log("Register result:", result);
+
                 if (result.success) {
                   registeredFontIds.add(fontId);
-                  console.log("Font registered:", font.name);
+                  console.log("Font registered successfully:", font.name);
                 } else {
                   throw new Error(result.error || "Registration failed");
                 }
               } else {
                 // Unregister font
+                console.log("Unregistering font:", fontId);
                 const result = await window.fontAPI.unregisterFont(fontId);
+
+                console.log("Unregister result:", result);
 
                 if (result.success) {
                   registeredFontIds.delete(fontId);
-                  console.log("Font unregistered:", font.name);
+                  console.log("Font unregistered successfully:", font.name);
                 } else {
                   throw new Error(result.error || "Unregistration failed");
                 }
@@ -656,16 +709,19 @@
                 `폰트 ${isEnabled ? "등록" : "해제"} 실패:\n${error.message}`
               );
               // Revert toggle state
-              e.target.checked = !isEnabled;
+              target.checked = !isEnabled;
             } finally {
               // Re-enable toggle
-              e.target.disabled = false;
+              target.disabled = false;
             }
           });
         });
 
         // Info buttons
-        document.querySelectorAll(".font-item__info-btn").forEach((button) => {
+        const infoButtons = document.querySelectorAll(".font-item__info-btn");
+        console.log("Found info buttons:", infoButtons.length);
+
+        infoButtons.forEach((button) => {
           button.addEventListener("click", (e) => {
             e.stopPropagation();
             const fontId = e.currentTarget.dataset.fontId;
@@ -682,6 +738,8 @@
             }
           });
         });
+
+        console.log("=== Event listeners setup complete ===");
       }
 
       // Load fonts from API
