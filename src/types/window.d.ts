@@ -59,6 +59,14 @@ interface Window {
     getRegisteredFonts: () => Promise<RegisteredFont[]>;
     syncFonts: () => Promise<SyncResult>;
     onSyncProgress: (callback: (progress: SyncProgress) => void) => void;
+    registerFont: (
+      fontId: string,
+      downloadUrl: string,
+      fontName: string
+    ) => Promise<{ success: boolean; message?: string; error?: string }>;
+    unregisterFont: (
+      fontId: string
+    ) => Promise<{ success: boolean; message?: string; error?: string }>;
   };
   authAPI: {
     login: (email: string, password: string) => Promise<LoginResponse>;

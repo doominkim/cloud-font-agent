@@ -20,12 +20,17 @@ body {
   background: var(--color-background-secondary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Login page specific body styling */
+body.login-body {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 /* Scrollbar Styles */
+/* Custom scrollbar for webkit browsers */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -33,14 +38,29 @@ body {
 
 ::-webkit-scrollbar-track {
   background: transparent;
+  margin: 2px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-border);
   border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
 }
 
 ::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--color-text-secondary);
+}
+
+/* Scrollbar for main content area - slightly more visible */
+.main-content__body::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+}
+
+.main-content__body::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-tertiary);
 }
 

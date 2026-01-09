@@ -7,6 +7,7 @@
 
 import { Component } from "./base/Component";
 import { NavigationItem, SidebarProps } from "../../types/ui";
+import { createIcon } from "../utils/icons";
 
 export class Sidebar extends Component<SidebarProps> {
   protected render(): HTMLElement {
@@ -48,11 +49,21 @@ export class Sidebar extends Component<SidebarProps> {
       button.classList.add("nav-item--active");
     }
 
-    // Icon
-    const icon = document.createElement("span");
-    icon.className = "nav-item__icon";
-    icon.textContent = item.icon;
-    button.appendChild(icon);
+    // Icon - use SVG icon based on item.id
+    const iconContainer = document.createElement("span");
+    iconContainer.className = "nav-item__icon";
+
+    // Map navigation item IDs to icon names
+    const iconMap: Record<string, "home" | "message" | "cloud"> = {
+      home: "home",
+      messages: "message",
+      cloud: "cloud",
+    };
+
+    const iconName = iconMap[item.id] || "home";
+    const icon = createIcon(iconName);
+    iconContainer.appendChild(icon);
+    button.appendChild(iconContainer);
 
     // Click handler
     button.addEventListener("click", () => {
@@ -72,11 +83,12 @@ export class Sidebar extends Component<SidebarProps> {
     button.setAttribute("data-nav-id", "settings");
     button.setAttribute("aria-label", "Settings");
 
-    // Settings icon (gear/cog)
-    const icon = document.createElement("span");
-    icon.className = "nav-item__icon";
-    icon.textContent = "⚙️";
-    button.appendChild(icon);
+    // Settings icon
+    const iconContainer = document.createElement("span");
+    iconContainer.className = "nav-item__icon";
+    const icon = createIcon("settings");
+    iconContainer.appendChild(icon);
+    button.appendChild(iconContainer);
 
     // Click handler
     button.addEventListener("click", () => {

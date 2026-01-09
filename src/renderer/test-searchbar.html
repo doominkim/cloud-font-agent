@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SearchBar Component Test</title>
+    <link rel="stylesheet" href="styles/variables.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/components.css" />
+    <link rel="stylesheet" href="styles/layout.css" />
+    <style>
+      body {
+        padding: 40px;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .test-section {
+        margin-bottom: 40px;
+        padding: 24px;
+        background: var(--color-background-secondary);
+        border-radius: var(--radius-lg);
+      }
+
+      .test-section h2 {
+        margin-top: 0;
+        margin-bottom: 16px;
+        font-size: var(--font-size-lg);
+      }
+
+      .search-container {
+        margin-bottom: 20px;
+      }
+
+      .results {
+        margin-top: 20px;
+      }
+
+      .result-item {
+        padding: 12px;
+        background: white;
+        border-radius: var(--radius-md);
+        margin-bottom: 8px;
+      }
+
+      .result-item__name {
+        font-weight: var(--font-weight-medium);
+        color: var(--color-text-primary);
+      }
+
+      .result-item__provider {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+        margin-top: 4px;
+      }
+
+      .no-results {
+        padding: 20px;
+        text-align: center;
+        color: var(--color-text-secondary);
+      }
+
+      .controls {
+        display: flex;
+        gap: 12px;
+        margin-top: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>SearchBar Component Test</h1>
+
+    <div class="test-section">
+      <h2>Basic SearchBar</h2>
+      <div id="search-container-1" class="search-container"></div>
+      <div id="results-1" class="results"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>SearchBar with Clear Button</h2>
+      <div id="search-container-2" class="search-container"></div>
+      <div class="controls">
+        <button id="clear-btn" class="btn btn--secondary">Clear Search</button>
+        <button id="get-value-btn" class="btn btn--ghost">Get Value</button>
+      </div>
+      <div id="results-2" class="results"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Korean/English Support Test</h2>
+      <div id="search-container-3" class="search-container"></div>
+      <p style="font-size: 13px; color: var(--color-text-secondary)">
+        Try searching: "고딕", "Gothic", "탱타입", "Taengtype"
+      </p>
+      <div id="results-3" class="results"></div>
+    </div>
+
+    <script type="module">
+      // Import SearchBar component
+      import { SearchBar } from "./components/SearchBar.js";
+
+      // Sample font data
+      const sampleFonts = [
+        {
+          id: "1",
+          name: "탱타입 산돌고딕",
+          version: "1.0.0",
+          providerId: "taengtype",
+          providerNameKo: "탱타입",
+          providerNameEn: "Taengtype",
+          enabled: false,
+          downloadUrl: "https://example.com/font1",
+          license: "OFL",
+          fileSize: 1024000,
+        },
+        {
+          id: "2",
+          name: "eighttype 본고딕",
+          version: "2.0.0",
+          providerId: "eighttype",
+          providerNameKo: "에잇타입",
+          providerNameEn: "eighttype",
+          enabled: false,
+          downloadUrl: "https://example.com/font2",
+          license: "OFL",
+          fileSize: 2048000,
+        },
+        {
+          id: "3",
+          name: "활자도서관 명조",
+          version: "1.5.0",
+          providerId: "hwaljadoseogwan",
+          providerNameKo: "활자도서관",
+          providerNameEn: "Hwalja Library",
+          enabled: false,
+          downloadUrl: "https://example.com/font3",
+          license: "OFL",
+          fileSize: 1536000,
+        },
+        {
+          id: "4",
+          name: "Noto Sans KR",
+          version: "3.0.0",
+          providerId: "google",
+          providerNameKo: "구글",
+          providerNameEn: "Google",
+          enabled: false,
+          downloadUrl: "https://example.com/font4",
+          license: "OFL",
+          fileSize: 3072000,
+        },
+      ];
+
+      // Filter function
+      function filterFonts(fonts, query) {
+        if (!query.trim()) {
+          return fonts;
+        }
+
+        const normalizedQuery = query.toLowerCase().trim();
+
+        return fonts.filter((font) => {
+          const fontName = font.name.toLowerCase();
+          const providerKo = font.providerNameKo.toLowerCase();
+          const providerEn = font.providerNameEn.toLowerCase();
+
+          return (
+            fontName.includes(normalizedQuery) ||
+            providerKo.includes(normalizedQuery) ||
+            providerEn.includes(normalizedQuery)
+          );
+        });
+      }
+
+      // Display results
+      function displayResults(fonts, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (fonts.length === 0) {
+          container.innerHTML = '<div class="no-results">No fonts found</div>';
+          return;
+        }
+
+        container.innerHTML = fonts
+          .map(
+            (font) => `
+          <div class="result-item">
+            <div class="result-item__name">${font.name}</div>
+            <div class="result-item__provider">${font.providerNameKo} (${font.providerNameEn}) - v${font.version}</div>
+          </div>
+        `
+          )
+          .join("");
+      }
+
+      // Test 1: Basic SearchBar
+      const searchBar1 = new SearchBar({
+        placeholder: "폰트 검색...",
+        onSearch: (query) => {
+          console.log("Search 1:", query);
+          const results = filterFonts(sampleFonts, query);
+          displayResults(results, "results-1");
+        },
+      });
+      searchBar1.mount(document.getElementById("search-container-1"));
+      displayResults(sampleFonts, "results-1");
+
+      // Test 2: SearchBar with controls
+      const searchBar2 = new SearchBar({
+        placeholder: "Search fonts...",
+        onSearch: (query) => {
+          console.log("Search 2:", query);
+          const results = filterFonts(sampleFonts, query);
+          displayResults(results, "results-2");
+        },
+      });
+      searchBar2.mount(document.getElementById("search-container-2"));
+      displayResults(sampleFonts, "results-2");
+
+      document.getElementById("clear-btn").addEventListener("click", () => {
+        searchBar2.clear();
+      });
+
+      document.getElementById("get-value-btn").addEventListener("click", () => {
+        alert(`Current value: "${searchBar2.getValue()}"`);
+      });
+
+      // Test 3: Korean/English support
+      const searchBar3 = new SearchBar({
+        placeholder: "한글/영문 검색 테스트...",
+        onSearch: (query) => {
+          console.log("Search 3:", query);
+          const results = filterFonts(sampleFonts, query);
+          displayResults(results, "results-3");
+        },
+      });
+      searchBar3.mount(document.getElementById("search-container-3"));
+      displayResults(sampleFonts, "results-3");
+    </script>
+  </body>
+</html>

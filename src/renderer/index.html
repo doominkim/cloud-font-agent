@@ -2,42 +2,643 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'"
-    />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cloud Font Agent</title>
-    <link rel="stylesheet" href="styles.css" />
+    <title>Kerning City - Cloud Font Agent</title>
+    <link rel="stylesheet" href="styles/variables.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/layout.css" />
+    <link rel="stylesheet" href="styles/components.css" />
+    <style>
+      /* Fix layout overflow issues */
+      .main-content {
+        overflow: hidden;
+      }
+
+      .main-content__body {
+        background: #ffffff;
+        padding: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      /* Font list container - NO PADDING to prevent overflow */
+      .font-list {
+        width: 100%;
+        padding: 0 !important; /* Override components.css padding */
+        box-sizing: border-box;
+      }
+
+      /* Search bar with proper margins */
+      .search-bar {
+        position: relative;
+        width: calc(100% - 40px);
+        margin: 20px 20px;
+        box-sizing: border-box;
+      }
+
+      .search-bar__icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #86868b;
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .search-bar__icon svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .search-bar__input {
+        width: 100%;
+        background: #e8e8ed;
+        border: none;
+        padding: 10px 16px 10px 40px;
+        border-radius: 8px;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+
+      /* Provider groups with proper margins */
+      .provider-group {
+        margin: 0 20px 4px 20px !important;
+        width: calc(100% - 40px);
+        box-sizing: border-box;
+      }
+
+      .provider-group__header {
+        padding: 8px 16px;
+        background: transparent;
+        border-radius: 0;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .provider-group__name {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1d1d1f;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* First part: font preview with actual font applied */
+      .provider-group__name-preview {
+        color: #1d1d1f;
+        font-weight: 600;
+        font-size: 15px;
+        /* Font family will be set dynamically via inline style */
+      }
+
+      /* Second part: original name in gray */
+      .provider-group__name-original {
+        color: #86868b;
+        font-weight: 400;
+        font-size: 15px;
+      }
+
+      .provider-group__toggle {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        color: #86868b;
+        padding: 4px;
+      }
+
+      .provider-group__fonts {
+        padding: 0;
+        border-left: 2px solid #e5e5e7;
+        margin-left: 16px;
+        margin-top: 4px;
+        box-sizing: border-box;
+      }
+
+      /* Font items */
+      .font-item {
+        padding: 6px 12px;
+        margin-left: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: transparent;
+        width: calc(100% - 12px);
+        box-sizing: border-box;
+      }
+
+      .font-item__info {
+        flex: 1;
+        min-width: 0;
+        margin-right: 16px;
+        overflow: hidden;
+      }
+
+      .font-item__name {
+        font-size: 14px;
+        color: #86868b;
+        font-weight: 400;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .font-item__actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+        min-width: 64px; /* Reduced from 76px for smaller toggle */
+      }
+
+      .font-item__info-btn {
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        color: #86868b;
+        background: transparent;
+        border-radius: 50%;
+        padding: 0;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      .font-item__info-btn:hover {
+        background: #f5f5f7;
+      }
+
+      /* Toggle Switch - Smaller version */
+      .toggle {
+        position: relative;
+        display: inline-block;
+        width: 36px;
+        height: 20px;
+        flex-shrink: 0;
+      }
+
+      .toggle__input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+      }
+
+      .toggle__slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #d1d1d6;
+        transition: background 0.2s ease-out;
+        border-radius: 9999px;
+      }
+
+      .toggle__slider::before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 2px;
+        bottom: 2px;
+        background: white;
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      .toggle__input:checked + .toggle__slider {
+        background: #34c759;
+      }
+
+      .toggle__input:checked + .toggle__slider::before {
+        transform: translateX(16px);
+      }
+
+      /* Sidebar controls - match login page position (fixed, outside sidebar) */
+      .sidebar__controls {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1000;
+        -webkit-app-region: no-drag;
+      }
+
+      .sidebar__controls .window-controls {
+        display: flex;
+        gap: 8px;
+      }
+
+      /* Navigation icons */
+      .nav-item {
+        height: 56px;
+        border-left: 3px solid transparent;
+      }
+
+      .nav-item__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+      }
+
+      .nav-item__icon svg {
+        width: 20px;
+        height: 20px;
+        stroke-width: 1.5;
+      }
+
+      .sidebar__settings {
+        margin-top: auto;
+      }
+    </style>
   </head>
   <body>
-    <div class="container">
-      <!-- Header with title and sync button -->
-      <div class="header">
-        <h2 class="title">내 폰트</h2>
-        <div class="header-buttons">
-          <button id="syncButton" class="sync-button">동기화</button>
-          <button id="closeButton" class="close-button">✕</button>
-        </div>
-      </div>
+    <div class="app">
+      <!-- Header -->
+      <header class="header">
+        <h1 class="header__title">Kerning City</h1>
+      </header>
 
-      <!-- Progress bar container -->
-      <div id="progressContainer" class="progress-container">
-        <div class="progress-bar">
-          <div id="progressFill" class="progress-fill"></div>
+      <!-- Main Layout -->
+      <div class="main-layout">
+        <!-- Window Controls (outside sidebar, fixed position like login page) -->
+        <div class="sidebar__controls">
+          <div class="window-controls">
+            <button
+              class="window-controls__button window-controls__button--close"
+            ></button>
+            <button
+              class="window-controls__button window-controls__button--minimize"
+            ></button>
+            <button
+              class="window-controls__button window-controls__button--maximize"
+            ></button>
+          </div>
         </div>
-        <p id="progressText" class="progress-text"></p>
-      </div>
 
-      <!-- Font list -->
-      <div class="font-list-container">
-        <ul id="fontList" class="font-list"></ul>
-        <div id="emptyState" class="empty-state">
-          <p>폰트를 불러오는 중...</p>
-        </div>
+        <!-- Sidebar -->
+        <aside class="sidebar">
+          <nav class="sidebar__nav">
+            <button class="nav-item nav-item--active" data-nav="home">
+              <span class="nav-item__icon">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3 10L10 3L17 10V17H12V13H8V17H3V10Z"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+            </button>
+            <button class="nav-item" data-nav="messages">
+              <span class="nav-item__icon">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M17 9C17 13.4183 13.4183 17 9 17C7.5 17 6.1 16.6 5 15.9L2 17L3.1 14C2.4 12.9 2 11.5 2 10C2 5.58172 5.58172 2 10 2C14.4183 2 18 5.58172 18 10Z"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+            </button>
+            <button class="nav-item" data-nav="cloud">
+              <span class="nav-item__icon">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M6 14C3.79086 14 2 12.2091 2 10C2 7.79086 3.79086 6 6 6C6.17 6 6.34 6.01 6.5 6.03C7.07 3.69 9.23 2 11.8 2C14.78 2 17.2 4.42 17.2 7.4C17.2 7.47 17.2 7.54 17.19 7.61C18.21 8.09 19 9.13 19 10.33C19 12 17.67 13.33 16 13.33H6V14Z"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+            </button>
+          </nav>
+          <div class="sidebar__settings">
+            <button class="nav-item" data-nav="settings">
+              <span class="nav-item__icon">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle cx="5" cy="10" r="1.5" fill="currentColor" />
+                  <circle cx="10" cy="10" r="1.5" fill="currentColor" />
+                  <circle cx="15" cy="10" r="1.5" fill="currentColor" />
+                </svg>
+              </span>
+            </button>
+          </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+          <div class="main-content__body" id="fontListContainer">
+            <!-- Font list will be inserted here -->
+          </div>
+        </main>
       </div>
     </div>
 
-    <script src="renderer.js"></script>
+    <script>
+      console.log("App loaded");
+
+      // Navigation
+      document.querySelectorAll("[data-nav]").forEach((button) => {
+        button.addEventListener("click", (e) => {
+          const nav = e.currentTarget.dataset.nav;
+          console.log("Navigation:", nav);
+
+          document.querySelectorAll(".nav-item").forEach((item) => {
+            item.classList.remove("nav-item--active");
+          });
+
+          e.currentTarget.classList.add("nav-item--active");
+
+          if (nav !== "home") {
+            alert(`${nav} 기능은 준비 중입니다.`);
+          }
+        });
+      });
+
+      // Search
+      function setupSearch() {
+        const searchInput = document.getElementById("searchInput");
+        if (!searchInput) return;
+
+        searchInput.addEventListener("input", (e) => {
+          const query = e.target.value.toLowerCase();
+          console.log("Search:", query);
+
+          document.querySelectorAll(".provider-group").forEach((group) => {
+            const groupName = group
+              .querySelector(".provider-group__name")
+              .textContent.toLowerCase();
+            const fonts = group.querySelectorAll(".font-item");
+            let hasVisibleFont = false;
+
+            fonts.forEach((font) => {
+              const fontName = font
+                .querySelector(".font-item__name")
+                .textContent.toLowerCase();
+              if (
+                fontName.includes(query) ||
+                groupName.includes(query) ||
+                query === ""
+              ) {
+                font.style.display = "flex";
+                hasVisibleFont = true;
+              } else {
+                font.style.display = "none";
+              }
+            });
+
+            group.style.display =
+              hasVisibleFont || query === "" ? "block" : "none";
+          });
+        });
+      }
+
+      // Load sample fonts
+      function loadSampleFonts() {
+        const container = document.getElementById("fontListContainer");
+        container.innerHTML = `
+          <div class="font-list">
+            <!-- Search Bar -->
+            <div class="search-bar">
+              <span class="search-bar__icon">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              <input type="text" class="search-bar__input" placeholder="Search..." id="searchInput" />
+            </div>
+
+            <!-- 탱타입 -->
+            <div class="provider-group">
+              <div class="provider-group__header">
+                <h3 class="provider-group__name">
+                  <span class="provider-group__name-preview" style="font-family: 'Taengtype Sans', sans-serif;">탱타입</span>
+                  <span class="provider-group__name-original">탱타입</span>
+                </h3>
+                <button class="provider-group__toggle">▼</button>
+              </div>
+              <div class="provider-group__fonts">
+                <div class="font-item">
+                  <div class="font-item__info">
+                    <div class="font-item__name">탱타입 산스 Regular ver.01</div>
+                  </div>
+                  <div class="font-item__actions">
+                    <button class="font-item__info-btn">ⓘ</button>
+                    <div class="toggle">
+                      <input type="checkbox" class="toggle__input" id="toggle-1">
+                      <span class="toggle__slider"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- eighttype -->
+            <div class="provider-group">
+              <div class="provider-group__header">
+                <h3 class="provider-group__name">
+                  <span class="provider-group__name-preview" style="font-family: 'Eighttype Gothic', sans-serif;">에잇타입</span>
+                  <span class="provider-group__name-original">에잇타입</span>
+                </h3>
+                <button class="provider-group__toggle">▼</button>
+              </div>
+              <div class="provider-group__fonts">
+                <div class="font-item">
+                  <div class="font-item__info">
+                    <div class="font-item__name">에잇타입 고딕 Regular ver.01</div>
+                  </div>
+                  <div class="font-item__actions">
+                    <button class="font-item__info-btn">ⓘ</button>
+                    <div class="toggle">
+                      <input type="checkbox" class="toggle__input" id="toggle-2">
+                      <span class="toggle__slider"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 뉴타입 -->
+            <div class="provider-group">
+              <div class="provider-group__header">
+                <h3 class="provider-group__name">
+                  <span class="provider-group__name-preview" style="font-family: 'Newtype', sans-serif;">⚡ 뉴타입</span>
+                  <span class="provider-group__name-original">⚡ 뉴타입</span>
+                </h3>
+                <button class="provider-group__toggle">▼</button>
+              </div>
+              <div class="provider-group__fonts">
+                <div class="font-item">
+                  <div class="font-item__info">
+                    <div class="font-item__name">뉴타입 Regular ver.01</div>
+                  </div>
+                  <div class="font-item__actions">
+                    <button class="font-item__info-btn">ⓘ</button>
+                    <div class="toggle">
+                      <input type="checkbox" class="toggle__input" id="toggle-3">
+                      <span class="toggle__slider"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 활자도서관 -->
+            <div class="provider-group">
+              <div class="provider-group__header">
+                <h3 class="provider-group__name">
+                  <span class="provider-group__name-preview" style="font-family: '활책명조', serif;">활자도서관</span>
+                  <span class="provider-group__name-original">활자도서관</span>
+                </h3>
+                <button class="provider-group__toggle">▲</button>
+              </div>
+              <div class="provider-group__fonts">
+                <div class="font-item">
+                  <div class="font-item__info">
+                    <div class="font-item__name">활책명조 제목용 Regular ver.03</div>
+                  </div>
+                  <div class="font-item__actions">
+                    <button class="font-item__info-btn">ⓘ</button>
+                    <div class="toggle">
+                      <input type="checkbox" class="toggle__input" id="toggle-4" checked>
+                      <span class="toggle__slider"></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="font-item">
+                  <div class="font-item__info">
+                    <div class="font-item__name">활책명조 제목용 Regular ver.02</div>
+                  </div>
+                  <div class="font-item__actions">
+                    <button class="font-item__info-btn">ⓘ</button>
+                    <div class="toggle">
+                      <input type="checkbox" class="toggle__input" id="toggle-5">
+                      <span class="toggle__slider"></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="font-item">
+                  <div class="font-item__info">
+                    <div class="font-item__name">활책명조 제목용 Regular ver.01</div>
+                  </div>
+                  <div class="font-item__actions">
+                    <button class="font-item__info-btn">ⓘ</button>
+                    <div class="toggle">
+                      <input type="checkbox" class="toggle__input" id="toggle-6">
+                      <span class="toggle__slider"></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="font-item">
+                  <div class="font-item__info">
+                    <div class="font-item__name">활책명조 본문용 Regular ver.01</div>
+                  </div>
+                  <div class="font-item__actions">
+                    <button class="font-item__info-btn">ⓘ</button>
+                    <div class="toggle">
+                      <input type="checkbox" class="toggle__input" id="toggle-7" checked>
+                      <span class="toggle__slider"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        setupEventListeners();
+      }
+
+      function setupEventListeners() {
+        setupSearch();
+
+        // Provider group toggle
+        document
+          .querySelectorAll(".provider-group__header")
+          .forEach((header) => {
+            header.addEventListener("click", (e) => {
+              const group = e.currentTarget.closest(".provider-group");
+              const fonts = group.querySelector(".provider-group__fonts");
+              const toggle = group.querySelector(".provider-group__toggle");
+
+              if (fonts.style.display === "none") {
+                fonts.style.display = "block";
+                toggle.textContent = "▼";
+              } else {
+                fonts.style.display = "none";
+                toggle.textContent = "▶";
+              }
+            });
+          });
+
+        // Toggle switches
+        document.querySelectorAll(".toggle__input").forEach((toggle) => {
+          toggle.addEventListener("change", (e) => {
+            console.log("Toggle:", e.target.id, e.target.checked);
+          });
+        });
+
+        // Info buttons
+        document.querySelectorAll(".font-item__info-btn").forEach((button) => {
+          button.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const fontName = e.currentTarget
+              .closest(".font-item")
+              .querySelector(".font-item__name").textContent;
+            alert(`폰트 정보: ${fontName}`);
+          });
+        });
+      }
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("DOM loaded");
+        loadSampleFonts();
+      });
+    </script>
   </body>
 </html>

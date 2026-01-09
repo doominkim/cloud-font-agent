@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ProviderGroup Component Test</title>
+    <link rel="stylesheet" href="styles/variables.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/components.css" />
+    <link rel="stylesheet" href="styles/layout.css" />
+    <style>
+      body {
+        padding: 40px;
+        background: #f5f5f7;
+      }
+      .test-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        margin-bottom: 24px;
+        color: #1d1d1f;
+      }
+      .test-section {
+        margin-bottom: 32px;
+      }
+      .test-section h2 {
+        font-size: 18px;
+        margin-bottom: 16px;
+        color: #1d1d1f;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>ProviderGroup Component Test</h1>
+
+      <div class="test-section">
+        <h2>Example 1: Expanded Provider Group</h2>
+        <div id="example1"></div>
+      </div>
+
+      <div class="test-section">
+        <h2>Example 2: Collapsed Provider Group</h2>
+        <div id="example2"></div>
+      </div>
+
+      <div class="test-section">
+        <h2>Example 3: Multiple Provider Groups</h2>
+        <div id="example3"></div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { ProviderGroup } from "./components/ProviderGroup.js";
+
+      // Example provider data
+      const taengtype = {
+        id: "taengtype",
+        nameKo: "탱타입",
+        nameEn: "Taengtype",
+      };
+
+      const eighttype = {
+        id: "eighttype",
+        nameKo: "에잇타입",
+        nameEn: "eighttype",
+      };
+
+      const fontlibrary = {
+        id: "fontlibrary",
+        nameKo: "활자도서관",
+        nameEn: "Font Library",
+      };
+
+      // Example font data
+      const taengtypeFonts = [
+        {
+          id: "font1",
+          name: "탱타입 고딕",
+          version: "1.0.0",
+          providerId: "taengtype",
+          providerNameKo: "탱타입",
+          providerNameEn: "Taengtype",
+          enabled: false,
+          downloadUrl: "https://example.com/font1",
+          license: "OFL",
+          fileSize: 1024000,
+        },
+        {
+          id: "font2",
+          name: "탱타입 명조",
+          version: "2.1.0",
+          providerId: "taengtype",
+          providerNameKo: "탱타입",
+          providerNameEn: "Taengtype",
+          enabled: true,
+          downloadUrl: "https://example.com/font2",
+          license: "OFL",
+          fileSize: 2048000,
+        },
+      ];
+
+      const eighttypeFonts = [
+        {
+          id: "font3",
+          name: "에잇타입 산스",
+          version: "1.5.0",
+          providerId: "eighttype",
+          providerNameKo: "에잇타입",
+          providerNameEn: "eighttype",
+          enabled: false,
+          downloadUrl: "https://example.com/font3",
+          license: "Commercial",
+          fileSize: 1536000,
+        },
+      ];
+
+      const fontlibraryFonts = [
+        {
+          id: "font4",
+          name: "활자도서관 명조",
+          version: "3.0.0",
+          providerId: "fontlibrary",
+          providerNameKo: "활자도서관",
+          providerNameEn: "Font Library",
+          enabled: true,
+          downloadUrl: "https://example.com/font4",
+          license: "OFL",
+          fileSize: 2560000,
+        },
+        {
+          id: "font5",
+          name: "활자도서관 고딕",
+          version: "2.5.0",
+          providerId: "fontlibrary",
+          providerNameKo: "활자도서관",
+          providerNameEn: "Font Library",
+          enabled: false,
+          downloadUrl: "https://example.com/font5",
+          license: "OFL",
+          fileSize: 2048000,
+        },
+      ];
+
+      // Example 1: Expanded
+      const group1 = new ProviderGroup({
+        provider: taengtype,
+        fonts: taengtypeFonts,
+        collapsed: false,
+        onToggleCollapse: () => {
+          console.log("Group 1 toggled");
+          const isCollapsed = group1
+            .getElement()
+            .querySelector(".provider-group__content")
+            .classList.contains("provider-group__content--collapsed");
+          if (isCollapsed) {
+            group1.expand();
+          } else {
+            group1.collapse();
+          }
+        },
+        onFontToggle: (fontId, enabled) => {
+          console.log(`Font ${fontId} toggled to ${enabled}`);
+        },
+        onInfoClick: (fontId) => {
+          alert(`Info for font ${fontId}`);
+        },
+      });
+      group1.mount(document.getElementById("example1"));
+
+      // Example 2: Collapsed
+      const group2 = new ProviderGroup({
+        provider: eighttype,
+        fonts: eighttypeFonts,
+        collapsed: true,
+        onToggleCollapse: () => {
+          console.log("Group 2 toggled");
+          const isCollapsed = group2
+            .getElement()
+            .querySelector(".provider-group__content")
+            .classList.contains("provider-group__content--collapsed");
+          if (isCollapsed) {
+            group2.expand();
+          } else {
+            group2.collapse();
+          }
+        },
+        onFontToggle: (fontId, enabled) => {
+          console.log(`Font ${fontId} toggled to ${enabled}`);
+        },
+        onInfoClick: (fontId) => {
+          alert(`Info for font ${fontId}`);
+        },
+      });
+      group2.mount(document.getElementById("example2"));
+
+      // Example 3: Multiple groups
+      const group3 = new ProviderGroup({
+        provider: fontlibrary,
+        fonts: fontlibraryFonts,
+        collapsed: false,
+        onToggleCollapse: () => {
+          console.log("Group 3 toggled");
+          const isCollapsed = group3
+            .getElement()
+            .querySelector(".provider-group__content")
+            .classList.contains("provider-group__content--collapsed");
+          if (isCollapsed) {
+            group3.expand();
+          } else {
+            group3.collapse();
+          }
+        },
+        onFontToggle: (fontId, enabled) => {
+          console.log(`Font ${fontId} toggled to ${enabled}`);
+        },
+        onInfoClick: (fontId) => {
+          alert(`Info for font ${fontId}`);
+        },
+      });
+      group3.mount(document.getElementById("example3"));
+    </script>
+  </body>
+</html>

@@ -168,6 +168,56 @@ export class FontManager {
   }
 
   /**
+   * Unregister a font from the system
+   * Requirement 4.1: Unregister fonts when toggled off
+   * Requirement 4.2: Delete font file after unregistration
+   *
+   * @param fontId - ID of the font to unregister
+   * @returns Promise that resolves when unregistration is complete
+   * @throws Error if font is not found or unregistration fails
+   */
+  async unregisterFont(fontId: string): Promise<void> {
+    try {
+      // Find the registered font
+      const registeredFont = this.registeredFonts.get(fontId);
+      if (!registeredFont) {
+        throw new Error(`Font not found: ${fontId}`);
+      }
+
+      console.log(`Unregistering font: ${registeredFont.name}`);
+
+      // Call native module to unregister font
+      const success = fontBridge.unregisterFont(registeredFont.filePath);
+
+      if (!success) {
+        throw new Error(`Failed to unregister font: ${registeredFont.name}`);
+      }
+
+      // Remove from tracking
+      this.registeredFonts.delete(fontId);
+
+      // Delete the font file
+      // Requirement 4.2: Delete font file after unregistration
+      await this.deleteFontFile(registeredFont.filePath);
+
+      console.log(`Font unregistered successfully: ${registeredFont.name}`);
+    } catch (error) {
+      console.error(`Failed to unregister font ${fontId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check if a font is currently registered
+   *
+   * @param fontId - ID of the font to check
+   * @returns True if font is registered, false otherwise
+   */
+  isFontRegistered(fontId: string): boolean {
+    return this.registeredFonts.has(fontId);
+  }
+
+  /**
    * Force cleanup of cache directory
    * Useful for manual cleanup or debugging
    *

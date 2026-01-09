@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FontInfoModal Component Test</title>
+    <link rel="stylesheet" href="styles/variables.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/components.css" />
+    <style>
+      body {
+        padding: 40px;
+        background: #f5f5f7;
+      }
+
+      .test-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .test-section {
+        margin-bottom: 40px;
+      }
+
+      .test-section h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: #1d1d1f;
+      }
+
+      .test-section p {
+        font-size: 14px;
+        color: #86868b;
+        margin-bottom: 16px;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .status {
+        margin-top: 16px;
+        padding: 12px;
+        background: #f5f5f7;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #1d1d1f;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1 style="font-size: 28px; font-weight: 700; margin-bottom: 32px">
+        FontInfoModal Component Test
+      </h1>
+
+      <div class="test-section">
+        <h2>1. Basic Modal</h2>
+        <p>기본 폰트 정보 모달을 표시합니다.</p>
+        <div class="button-group">
+          <button id="showBasicModal" class="btn btn--primary">
+            Show Basic Modal
+          </button>
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h2>2. Different Fonts</h2>
+        <p>다양한 폰트 정보를 가진 모달을 표시합니다.</p>
+        <div class="button-group">
+          <button id="showFont1" class="btn btn--secondary">Pretendard</button>
+          <button id="showFont2" class="btn btn--secondary">
+            Sandoll 고딕Neo1
+          </button>
+          <button id="showFont3" class="btn btn--secondary">나눔고딕</button>
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h2>3. Interaction Tests</h2>
+        <p>모달의 다양한 닫기 방법을 테스트합니다.</p>
+        <div class="button-group">
+          <button id="testCloseButton" class="btn btn--secondary">
+            Test Close Button
+          </button>
+          <button id="testOverlayClick" class="btn btn--secondary">
+            Test Overlay Click
+          </button>
+          <button id="testEscKey" class="btn btn--secondary">
+            Test ESC Key
+          </button>
+        </div>
+        <div id="interactionStatus" class="status" style="display: none"></div>
+      </div>
+
+      <div class="test-section">
+        <h2>4. Large File Size</h2>
+        <p>큰 파일 크기를 가진 폰트 정보를 표시합니다.</p>
+        <div class="button-group">
+          <button id="showLargeFile" class="btn btn--secondary">
+            Show Large File (10MB)
+          </button>
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h2>5. Long Text</h2>
+        <p>긴 텍스트를 가진 폰트 정보를 표시합니다.</p>
+        <div class="button-group">
+          <button id="showLongText" class="btn btn--secondary">
+            Show Long Text
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { FontInfoModal } from "./components/FontInfoModal.js";
+
+      // Sample font data
+      const fonts = {
+        pretendard: {
+          name: "Pretendard",
+          version: "1.3.6",
+          provider: "탱타입 (Taengtype)",
+          license: "SIL Open Font License",
+          fileSize: 2048576,
+          previewText: "가나다라마바사 ABCDEFG 1234567",
+        },
+        sandoll: {
+          name: "Sandoll 고딕Neo1",
+          version: "2.0.1",
+          provider: "eighttype",
+          license: "Commercial License",
+          fileSize: 3145728,
+          previewText: "The quick brown fox jumps over the lazy dog",
+        },
+        nanum: {
+          name: "나눔고딕",
+          version: "1.0.0",
+          provider: "활자도서관",
+          license: "OFL (Open Font License)",
+          fileSize: 1572864,
+          previewText: "다람쥐 헌 쳇바퀴에 타고파",
+        },
+        large: {
+          name: "Heavy Font",
+          version: "3.0.0",
+          provider: "Big Font Company",
+          license: "Commercial License",
+          fileSize: 10485760, // 10MB
+          previewText: "This is a very large font file",
+        },
+        longText: {
+          name: "Font with Long License",
+          version: "1.0.0",
+          provider: "Long Name Provider Company Ltd.",
+          license:
+            "This is a very long license text that should wrap properly in the modal display area",
+          fileSize: 2048576,
+          previewText:
+            "가나다라마바사아자차카타파하 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890",
+        },
+      };
+
+      const statusEl = document.getElementById("interactionStatus");
+
+      function showStatus(message) {
+        statusEl.textContent = message;
+        statusEl.style.display = "block";
+        setTimeout(() => {
+          statusEl.style.display = "none";
+        }, 3000);
+      }
+
+      function createModal(fontInfo, onCloseMessage) {
+        const modal = new FontInfoModal({
+          fontInfo: fontInfo,
+          onClose: () => {
+            console.log(onCloseMessage || "Modal closed");
+            if (onCloseMessage) {
+              showStatus(onCloseMessage);
+            }
+          },
+        });
+        modal.mount(document.body);
+        return modal;
+      }
+
+      // Test 1: Basic Modal
+      document
+        .getElementById("showBasicModal")
+        .addEventListener("click", () => {
+          const modal = createModal(fonts.pretendard);
+          modal.show();
+        });
+
+      // Test 2: Different Fonts
+      document.getElementById("showFont1").addEventListener("click", () => {
+        const modal = createModal(fonts.pretendard);
+        modal.show();
+      });
+
+      document.getElementById("showFont2").addEventListener("click", () => {
+        const modal = createModal(fonts.sandoll);
+        modal.show();
+      });
+
+      document.getElementById("showFont3").addEventListener("click", () => {
+        const modal = createModal(fonts.nanum);
+        modal.show();
+      });
+
+      // Test 3: Interaction Tests
+      document
+        .getElementById("testCloseButton")
+        .addEventListener("click", () => {
+          const modal = createModal(fonts.pretendard, "✓ Close button works!");
+          modal.show();
+          showStatus("Click the X button to close the modal");
+        });
+
+      document
+        .getElementById("testOverlayClick")
+        .addEventListener("click", () => {
+          const modal = createModal(fonts.pretendard, "✓ Overlay click works!");
+          modal.show();
+          showStatus("Click outside the modal to close it");
+        });
+
+      document.getElementById("testEscKey").addEventListener("click", () => {
+        const modal = createModal(fonts.pretendard, "✓ ESC key works!");
+        modal.show();
+        showStatus("Press ESC key to close the modal");
+      });
+
+      // Test 4: Large File
+      document.getElementById("showLargeFile").addEventListener("click", () => {
+        const modal = createModal(fonts.large);
+        modal.show();
+      });
+
+      // Test 5: Long Text
+      document.getElementById("showLongText").addEventListener("click", () => {
+        const modal = createModal(fonts.longText);
+        modal.show();
+      });
+    </script>
+  </body>
+</html>

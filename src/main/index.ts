@@ -8,6 +8,8 @@ import {
   ipcMain,
 } from "electron";
 import * as path from "path";
+import * as fs from "fs";
+import axios from "axios";
 import { createCanvas } from "canvas";
 import { FontManager } from "./font-manager";
 import { SyncManager } from "./sync-manager";
@@ -48,10 +50,8 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, "../renderer/login.html"));
   }
 
-  // Open DevTools only in development mode
-  if (process.env.NODE_ENV === "development") {
-    mainWindow.webContents.openDevTools({ mode: "detach" });
-  }
+  // Open DevTools (always open for debugging)
+  mainWindow.webContents.openDevTools({ mode: "detach" });
 
   mainWindow.on("blur", () => {
     if (mainWindow && !mainWindow.webContents.isDevToolsOpened()) {
@@ -284,6 +284,83 @@ function setupIpcHandlers() {
     } catch (error) {
       console.error("Failed to sync fonts:", error);
       throw error;
+    }
+  });
+
+  // Handler: fonts:register
+  // Requirement 4.2: Register individual font
+  ipcMain.handle(
+    "fonts:register",
+    async (_event, fontId: string, downloadUrl: string, fontName: string) => {
+      try {
+        if (!fontManager) {
+          throw new Error("Font manager not initialized");
+        }
+
+        console.log(`Registering font: ${fontName} (${fontId})`);
+
+        // Check if already registered
+        if (fontManager.isFontRegistered(fontId)) {
+          console.log(`Font already registered: ${fontName}`);
+          return { success: true, message: "Font already registered" };
+        }
+
+        // Download font file
+        const response = await axios.get(downloadUrl, {
+          responseType: "arraybuffer",
+          timeout: 60000,
+        });
+
+        // Determine file extension
+        const urlExt = path.extname(downloadUrl).toLowerCase();
+        const extension = [".ttf", ".otf"].includes(urlExt) ? urlExt : ".ttf";
+
+        // Generate secure filename
+        const filePath = fontManager.getSecureFilePath(fontId, extension);
+
+        // Write file to cache directory
+        await fs.promises.writeFile(filePath, Buffer.from(response.data));
+
+        // Register font with system
+        await fontManager.registerFont(filePath, fontName);
+
+        console.log(`Font registered successfully: ${fontName}`);
+        return { success: true, message: "Font registered successfully" };
+      } catch (error) {
+        console.error(`Failed to register font ${fontName}:`, error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        return { success: false, error: errorMessage };
+      }
+    }
+  );
+
+  // Handler: fonts:unregister
+  // Requirement 4.3: Unregister individual font
+  ipcMain.handle("fonts:unregister", async (_event, fontId: string) => {
+    try {
+      if (!fontManager) {
+        throw new Error("Font manager not initialized");
+      }
+
+      console.log(`Unregistering font: ${fontId}`);
+
+      // Check if font is registered
+      if (!fontManager.isFontRegistered(fontId)) {
+        console.log(`Font not registered: ${fontId}`);
+        return { success: true, message: "Font not registered" };
+      }
+
+      // Unregister font
+      await fontManager.unregisterFont(fontId);
+
+      console.log(`Font unregistered successfully: ${fontId}`);
+      return { success: true, message: "Font unregistered successfully" };
+    } catch (error) {
+      console.error(`Failed to unregister font ${fontId}:`, error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      return { success: false, error: errorMessage };
     }
   });
 

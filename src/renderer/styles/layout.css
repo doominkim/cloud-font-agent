@@ -24,6 +24,8 @@
   padding: 0 var(--spacing-lg);
   z-index: var(--z-header);
   -webkit-app-region: drag;
+  /* Ensure header stays on top during scroll */
+  will-change: transform;
 }
 
 .header__title {
@@ -70,17 +72,21 @@
   display: flex;
   height: calc(100vh - var(--header-height));
   margin-top: var(--header-height);
+  overflow: hidden;
 }
 
 /* Sidebar */
 .sidebar {
   width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  max-width: var(--sidebar-width);
   background: var(--color-background);
   border-right: 1px solid var(--color-border-light);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   z-index: var(--z-sidebar);
+  overflow: hidden;
 }
 
 .sidebar__nav {
@@ -93,28 +99,40 @@
 
 .sidebar__settings {
   padding: var(--spacing-lg) 0;
-  border-top: 1px solid var(--color-border-light);
 }
 
 /* Main Content */
 .main-content {
   flex: 1;
+  min-width: 0; /* Allow flex item to shrink below content size */
   display: flex;
   flex-direction: column;
   overflow: hidden;
   background: var(--color-background-secondary);
+  max-width: 100%;
 }
 
 .main-content__search {
   padding: var(--spacing-xl);
   background: var(--color-background);
   border-bottom: 1px solid var(--color-border-light);
+  /* Keep search bar fixed at top of main content */
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
 }
 
 .main-content__body {
   flex: 1;
   overflow-y: auto;
-  padding: var(--spacing-xl);
+  overflow-x: hidden;
+  padding: 0;
+  /* Smooth scrolling */
+  scroll-behavior: smooth;
+  /* Better scroll performance */
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* Login Page Layout */
@@ -178,3 +196,25 @@
   width: 100%;
   margin-top: var(--spacing-2xl);
 }
+
+/* Responsive Layout Constraints */
+/* Removed min-width constraints that were causing overflow on 491px window */
+
+/* Ensure proper flex behavior on window resize */
+.main-layout {
+  position: relative;
+}
+
+.main-content__body {
+  width: 100%;
+  height: 100%;
+}
+
+/* Scroll Behavior */
+/* 
+ * The header is fixed at the top (position: fixed)
+ * The main-layout starts below the header (margin-top: var(--header-height))
+ * The main-content__body has overflow-y: auto for vertical scrolling
+ * The sidebar has overflow: hidden to prevent scrolling
+ * Custom scrollbar styling is applied in base.css
+ */

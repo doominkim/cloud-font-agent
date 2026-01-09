@@ -136,3 +136,15 @@ export interface OAuthButtonsProps {
   providers: OAuthProvider[];
   onOAuthLogin: (provider: OAuthProvider) => Promise<void>;
 }
+
+export interface FontListProps {
+  fonts: Font[];
+  searchQuery: string;
+  onFontToggle: (fontId: string, enabled: boolean) => void;
+  onInfoClick: (fontId: string) => void;
+}
+
+export interface GroupedFonts {
+  provider: Provider;
+  fonts: Font[];
+}

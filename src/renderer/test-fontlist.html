@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FontList Component Test</title>
+    <link rel="stylesheet" href="styles/variables.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/components.css" />
+    <link rel="stylesheet" href="styles/layout.css" />
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        background: #f5f5f7;
+      }
+
+      .test-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .test-header {
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e5e5e7;
+      }
+
+      .test-header h1 {
+        margin: 0 0 10px 0;
+        font-size: 24px;
+        font-weight: 600;
+      }
+
+      .test-header p {
+        margin: 0;
+        color: #86868b;
+        font-size: 14px;
+      }
+
+      .test-controls {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .test-controls input {
+        flex: 1;
+      }
+
+      .test-controls button {
+        padding: 8px 16px;
+        background: #0071e3;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .test-controls button:hover {
+        background: #0077ed;
+      }
+
+      #fontListContainer {
+        height: 600px;
+        overflow: hidden;
+        border: 1px solid #e5e5e7;
+        border-radius: 12px;
+        background: #f5f5f7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <div class="test-header">
+        <h1>FontList Component Test</h1>
+        <p>폰트 목록 컴포넌트 테스트 페이지</p>
+      </div>
+
+      <div class="test-controls">
+        <input
+          type="text"
+          id="searchInput"
+          class="input"
+          placeholder="폰트 검색..."
+        />
+        <button id="clearBtn">Clear</button>
+        <button id="addFontBtn">Add Font</button>
+      </div>
+
+      <div id="fontListContainer"></div>
+    </div>
+
+    <script type="module">
+      import { FontList } from "./components/FontList.js";
+
+      // Sample font data
+      const sampleFonts = [
+        {
+          id: "font-1",
+          name: "탱타입 산스",
+          version: "1.0.0",
+          providerId: "taengtype",
+          providerNameKo: "탱타입",
+          providerNameEn: "Taengtype",
+          enabled: false,
+          downloadUrl: "https://example.com/font1.ttf",
+          license: "Commercial",
+          fileSize: 1024000,
+        },
+        {
+          id: "font-2",
+          name: "탱타입 세리프",
+          version: "1.2.0",
+          providerId: "taengtype",
+          providerNameKo: "탱타입",
+          providerNameEn: "Taengtype",
+          enabled: true,
+          downloadUrl: "https://example.com/font2.ttf",
+          license: "Commercial",
+          fileSize: 2048000,
+        },
+        {
+          id: "font-3",
+          name: "탱타입 모노",
+          version: "1.5.0",
+          providerId: "taengtype",
+          providerNameKo: "탱타입",
+          providerNameEn: "Taengtype",
+          enabled: false,
+          downloadUrl: "https://example.com/font3.ttf",
+          license: "Commercial",
+          fileSize: 1536000,
+        },
+        {
+          id: "font-4",
+          name: "에잇타입 고딕",
+          version: "2.0.0",
+          providerId: "eighttype",
+          providerNameKo: "eighttype",
+          providerNameEn: "eighttype",
+          enabled: false,
+          downloadUrl: "https://example.com/font4.ttf",
+          license: "Commercial",
+          fileSize: 1800000,
+        },
+        {
+          id: "font-5",
+          name: "에잇타입 명조",
+          version: "2.1.0",
+          providerId: "eighttype",
+          providerNameKo: "eighttype",
+          providerNameEn: "eighttype",
+          enabled: true,
+          downloadUrl: "https://example.com/font5.ttf",
+          license: "Commercial",
+          fileSize: 2200000,
+        },
+        {
+          id: "font-6",
+          name: "활자도서관 바탕",
+          version: "1.0.0",
+          providerId: "hwaljadoseogwan",
+          providerNameKo: "활자도서관",
+          providerNameEn: "Hwalja Library",
+          enabled: false,
+          downloadUrl: "https://example.com/font6.ttf",
+          license: "Open Source",
+          fileSize: 1200000,
+        },
+        {
+          id: "font-7",
+          name: "활자도서관 돋움",
+          version: "1.1.0",
+          providerId: "hwaljadoseogwan",
+          providerNameKo: "활자도서관",
+          providerNameEn: "Hwalja Library",
+          enabled: false,
+          downloadUrl: "https://example.com/font7.ttf",
+          license: "Open Source",
+          fileSize: 1100000,
+        },
+      ];
+
+      let currentFonts = [...sampleFonts];
+
+      // Create FontList component
+      const fontList = new FontList({
+        fonts: currentFonts,
+        searchQuery: "",
+        onFontToggle: (fontId, enabled) => {
+          console.log(`Font ${fontId} toggled to ${enabled}`);
+          // Update font state
+          const font = currentFonts.find((f) => f.id === fontId);
+          if (font) {
+            font.enabled = enabled;
+          }
+        },
+        onInfoClick: (fontId) => {
+          console.log(`Info clicked for font ${fontId}`);
+          const font = currentFonts.find((f) => f.id === fontId);
+          if (font) {
+            alert(
+              `Font Info:\n\nName: ${font.name}\nVersion: ${font.version}\nProvider: ${font.providerNameKo}`
+            );
+          }
+        },
+      });
+
+      // Mount component
+      const container = document.getElementById("fontListContainer");
+      container.appendChild(fontList.getElement());
+
+      // Search input handler
+      const searchInput = document.getElementById("searchInput");
+      searchInput.addEventListener("input", (e) => {
+        fontList.updateSearch(e.target.value);
+      });
+
+      // Clear button handler
+      const clearBtn = document.getElementById("clearBtn");
+      clearBtn.addEventListener("click", () => {
+        searchInput.value = "";
+        fontList.updateSearch("");
+      });
+
+      // Add font button handler
+      const addFontBtn = document.getElementById("addFontBtn");
+      let fontCounter = 8;
+      addFontBtn.addEventListener("click", () => {
+        const newFont = {
+          id: `font-${fontCounter}`,
+          name: `테스트 폰트 ${fontCounter}`,
+          version: "1.0.0",
+          providerId: "test",
+          providerNameKo: "테스트",
+          providerNameEn: "Test",
+          enabled: false,
+          downloadUrl: `https://example.com/font${fontCounter}.ttf`,
+          license: "Test",
+          fileSize: 1000000,
+        };
+        currentFonts.push(newFont);
+        fontList.updateFonts([...currentFonts]);
+        fontCounter++;
+      });
+    </script>
+  </body>
+</html>

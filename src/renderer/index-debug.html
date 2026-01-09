@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kerning City - Cloud Font Agent (Debug)</title>
+    <link rel="stylesheet" href="styles/variables.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/layout.css" />
+    <link rel="stylesheet" href="styles/components.css" />
+  </head>
+  <body>
+    <div id="app" class="app">
+      <h1 style="padding: 20px; color: red">DEBUG MODE - Loading...</h1>
+    </div>
+
+    <script>
+      console.log("=== DEBUG START ===");
+      console.log("Document loaded");
+      console.log("App container:", document.getElementById("app"));
+
+      // Test if we can load anything
+      document.getElementById("app").innerHTML = `
+        <div style="padding: 20px;">
+          <h1>Debug Info</h1>
+          <p>If you see this, HTML is loading correctly.</p>
+          <p>Check console for module loading errors.</p>
+        </div>
+      `;
+
+      console.log("=== Attempting to load modules ===");
+    </script>
+
+    <script type="module">
+      console.log("Module script started");
+
+      try {
+        console.log("Attempting to import Header...");
+        const headerModule = await import("./components/Header.js");
+        console.log("Header imported:", headerModule);
+      } catch (error) {
+        console.error("Failed to import Header:", error);
+        document.getElementById("app").innerHTML += `
+          <div style="padding: 20px; background: #ffcccc; margin: 20px;">
+            <h2>Import Error</h2>
+            <pre>${error.message}\n${error.stack}</pre>
+          </div>
+        `;
+      }
+    </script>
+  </body>
+</html>

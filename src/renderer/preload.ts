@@ -83,6 +83,30 @@ contextBridge.exposeInMainWorld("fontAPI", {
   onSyncProgress: (callback: (progress: SyncProgress) => void): void => {
     ipcRenderer.on("sync:progress", (_event, progress) => callback(progress));
   },
+
+  /**
+   * Register an individual font
+   * @param fontId - Font identifier
+   * @param downloadUrl - URL to download the font from
+   * @param fontName - Name of the font
+   * @returns Promise resolving to registration result
+   */
+  registerFont: (
+    fontId: string,
+    downloadUrl: string,
+    fontName: string
+  ): Promise<{ success: boolean; message?: string; error?: string }> =>
+    ipcRenderer.invoke("fonts:register", fontId, downloadUrl, fontName),
+
+  /**
+   * Unregister an individual font
+   * @param fontId - Font identifier
+   * @returns Promise resolving to unregistration result
+   */
+  unregisterFont: (
+    fontId: string
+  ): Promise<{ success: boolean; message?: string; error?: string }> =>
+    ipcRenderer.invoke("fonts:unregister", fontId),
 });
 
 // Expose authentication API
