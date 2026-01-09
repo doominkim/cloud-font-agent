@@ -83,6 +83,8 @@ export class AuthManager {
    * Requirement 10.1: Authenticate user and navigate to main font list
    * Requirement 10.2: Display error message on invalid credentials
    *
+   * DEV MODE: Accepts any email/password combination
+   *
    * @param email - User email
    * @param password - User password
    * @returns Login response with user and token
@@ -92,17 +94,17 @@ export class AuthManager {
       // Simulate network delay
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // Mock authentication - check against mock users
-      const mockUser = MOCK_USERS.find(
-        (u) => u.email === email && u.password === password
-      );
+      // DEV MODE: Accept any credentials
+      console.log("DEV MODE: Accepting any credentials");
+      console.log("Email:", email);
 
-      if (!mockUser) {
-        return {
-          success: false,
-          error: "이메일 또는 비밀번호가 올바르지 않습니다.",
-        };
-      }
+      // Create user from provided email
+      const user: User = {
+        id: Math.random().toString(36).substring(7),
+        email: email,
+        name: email.split("@")[0],
+        createdAt: new Date(),
+      };
 
       // Generate mock token
       const token: AuthToken = {
@@ -112,7 +114,7 @@ export class AuthManager {
       };
 
       // Save user and token
-      this.currentUser = mockUser.user;
+      this.currentUser = user;
       this.currentToken = token;
 
       // Persist token
@@ -120,7 +122,7 @@ export class AuthManager {
 
       return {
         success: true,
-        user: mockUser.user,
+        user: user,
         token,
       };
     } catch (error) {

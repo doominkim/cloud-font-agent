@@ -80,16 +80,16 @@ Cloud Font Agent의 UI를 현대적인 사이드바 네비게이션과 그룹화
   - 타이틀 표시 테스트
   - _Requirements: 6.1, 6.2_
 
-- [-] 3. Sidebar 컴포넌트 구현
+- [x] 3. Sidebar 컴포넌트 구현
 
-  - [ ] 3.1 Sidebar HTML 구조 및 스타일 작성
+  - [x] 3.1 Sidebar HTML 구조 및 스타일 작성
 
     - 네비게이션 아이콘 (홈, 메시지, 클라우드) 추가
     - 하단 설정 버튼 추가
     - 활성 상태 스타일 정의
     - _Requirements: 1.1, 1.5_
 
-  - [ ] 3.2 Sidebar 네비게이션 로직 구현
+  - [x] 3.2 Sidebar 네비게이션 로직 구현
     - 클릭 이벤트 핸들러
     - 활성 아이템 상태 관리
     - _Requirements: 1.2, 1.3, 1.4_

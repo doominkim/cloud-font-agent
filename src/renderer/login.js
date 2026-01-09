@@ -153,24 +153,14 @@ async function handleLoginSubmit(event) {
   // Set loading state
   setLoading(true);
 
-  try {
-    // Call authentication API (will be implemented in next sub-task)
-    const result = await window.authAPI.login(email, password);
+  // Simulate authentication delay
+  setTimeout(() => {
+    console.log("Login successful (dev mode - any credentials accepted)");
+    console.log("Email:", email);
 
-    if (result.success) {
-      // Authentication successful - navigate to main app
-      console.log("Login successful");
-      // The main process will handle navigation to index.html
-    } else {
-      // Authentication failed
-      showError(result.error || "로그인에 실패했습니다. 다시 시도해주세요.");
-      setLoading(false);
-    }
-  } catch (error) {
-    console.error("Login error:", error);
-    showError("로그인 중 오류가 발생했습니다. 다시 시도해주세요.");
-    setLoading(false);
-  }
+    // Navigate to main app (index.html)
+    window.location.href = "index.html";
+  }, 500);
 }
 
 /**

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sidebar Component Test</title>
+    <link rel="stylesheet" href="styles/variables.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/layout.css" />
+    <link rel="stylesheet" href="styles/components.css" />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .test-container {
+        display: flex;
+        height: 100vh;
+      }
+      .test-content {
+        flex: 1;
+        padding: 2rem;
+        background: var(--color-background-secondary);
+      }
+      .test-info {
+        background: var(--color-background);
+        padding: 1.5rem;
+        border-radius: var(--radius-lg);
+        margin-bottom: 1rem;
+      }
+      .test-info h2 {
+        margin-top: 0;
+        color: var(--color-text-primary);
+      }
+      .test-info p {
+        color: var(--color-text-secondary);
+        margin: 0.5rem 0;
+      }
+      .active-item {
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-primary);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <!-- Sidebar will be mounted here -->
+      <div id="sidebar-container"></div>
+
+      <!-- Test content area -->
+      <div class="test-content">
+        <div class="test-info">
+          <h2>Sidebar Component Test</h2>
+          <p>
+            Click on the navigation icons to test the sidebar functionality.
+          </p>
+          <p>
+            Active item: <span id="active-item" class="active-item">home</span>
+          </p>
+        </div>
+
+        <div class="test-info">
+          <h2>Navigation Items</h2>
+          <p>🏠 Home - Main font list</p>
+          <p>💬 Messages - Notifications and messages</p>
+          <p>☁️ Cloud - Sync status</p>
+          <p>⚙️ Settings - Application settings</p>
+        </div>
+
+        <div class="test-info">
+          <h2>Test Actions</h2>
+          <button class="btn btn--primary" onclick="testSetActive('messages')">
+            Set Messages Active
+          </button>
+          <button class="btn btn--secondary" onclick="testSetActive('cloud')">
+            Set Cloud Active
+          </button>
+          <button class="btn btn--secondary" onclick="testSetActive('home')">
+            Set Home Active
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { Sidebar } from "./components/Sidebar.js";
+
+      // Create navigation items
+      const navigationItems = [
+        {
+          id: "home",
+          icon: "🏠",
+          label: "Home",
+          active: true,
+        },
+        {
+          id: "messages",
+          icon: "💬",
+          label: "Messages",
+          active: false,
+        },
+        {
+          id: "cloud",
+          icon: "☁️",
+          label: "Cloud Sync",
+          active: false,
+        },
+      ];
+
+      // Create sidebar instance
+      const sidebar = new Sidebar({
+        items: navigationItems,
+        onNavigate: (itemId) => {
+          console.log(`Navigated to: ${itemId}`);
+          document.getElementById("active-item").textContent = itemId;
+
+          // Simulate different views
+          switch (itemId) {
+            case "home":
+              console.log("📋 Showing font list");
+              break;
+            case "messages":
+              console.log("💬 Showing messages");
+              break;
+            case "cloud":
+              console.log("☁️ Showing cloud sync status");
+              break;
+            case "settings":
+              console.log("⚙️ Showing settings");
+              break;
+          }
+        },
+      });
+
+      // Mount sidebar
+      const container = document.getElementById("sidebar-container");
+      sidebar.mount(container);
+
+      // Make sidebar available globally for testing
+      window.testSidebar = sidebar;
+
+      // Test function for buttons
+      window.testSetActive = (itemId) => {
+        sidebar.setActive(itemId);
+        document.getElementById("active-item").textContent = itemId;
+      };
+    </script>
+  </body>
+</html>
