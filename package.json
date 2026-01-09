@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm run build:ts && npm run copy:assets && npm run build:native",
     "build:ts": "tsc",
-    "copy:assets": "cp src/renderer/index.html dist/renderer/ && cp src/renderer/styles.css dist/renderer/ && cp src/renderer/renderer.js dist/renderer/",
+    "copy:assets": "cp src/renderer/index.html dist/renderer/ && cp -r src/renderer/styles dist/renderer/ && cp src/renderer/renderer.js dist/renderer/",
     "build:native": "node-gyp rebuild",
     "dev": "npm run build:ts && npm run copy:assets && electron .",
     "start": "electron .",
