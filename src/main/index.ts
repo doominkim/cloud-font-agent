@@ -12,12 +12,14 @@ import { createCanvas } from "canvas";
 import { FontManager } from "./font-manager";
 import { SyncManager } from "./sync-manager";
 import { FontAPIClient } from "./api-client";
+import { AuthManager } from "./auth-manager";
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let fontManager: FontManager | null = null;
 let syncManager: SyncManager | null = null;
 let apiClient: FontAPIClient | null = null;
+let authManager: AuthManager | null = null;
 
 function createWindow() {
   // Requirements 5.1, 5.2, 5.3, 5.4, 5.5
@@ -38,7 +40,13 @@ function createWindow() {
     },
   });
 
-  mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
+  // Check if user is authenticated
+  // Requirement 10.1: Navigate to main app if authenticated, otherwise show login
+  if (authManager && authManager.isAuthenticated()) {
+    mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
+  } else {
+    mainWindow.loadFile(path.join(__dirname, "../renderer/login.html"));
+  }
 
   // Open DevTools only in development mode
   if (process.env.NODE_ENV === "development") {
@@ -162,6 +170,73 @@ app.dock?.hide(); // Dock에서 앱 아이콘 숨기기
  * Setup IPC handlers for font operations
  */
 function setupIpcHandlers() {
+  // Handler: auth:login
+  // Requirement 10.1: Authenticate user
+  // Requirement 10.2: Handle invalid credentials
+  ipcMain.handle(
+    "auth:login",
+    async (_event, email: string, password: string) => {
+      try {
+        if (!authManager) {
+          throw new Error("Auth manager not initialized");
+        }
+
+        const result = await authManager.login(email, password);
+
+        // If login successful, navigate to main app
+        if (result.success && mainWindow) {
+          mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
+        }
+
+        return result;
+      } catch (error) {
+        console.error("Failed to login:", error);
+        return {
+          success: false,
+          error: "로그인 중 오류가 발생했습니다.",
+        };
+      }
+    }
+  );
+
+  // Handler: auth:logout
+  ipcMain.handle("auth:logout", async () => {
+    try {
+      if (!authManager) {
+        throw new Error("Auth manager not initialized");
+      }
+
+      await authManager.logout();
+
+      // Navigate back to login page
+      if (mainWindow) {
+        mainWindow.loadFile(path.join(__dirname, "../renderer/login.html"));
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error("Failed to logout:", error);
+      throw error;
+    }
+  });
+
+  // Handler: auth:check
+  ipcMain.handle("auth:check", async () => {
+    try {
+      if (!authManager) {
+        throw new Error("Auth manager not initialized");
+      }
+
+      return {
+        isAuthenticated: authManager.isAuthenticated(),
+        user: authManager.getCurrentUser(),
+      };
+    } catch (error) {
+      console.error("Failed to check auth:", error);
+      throw error;
+    }
+  });
+
   // Handler: fonts:fetch
   // Requirement 1.1: Fetch purchased fonts from API
   ipcMain.handle("fonts:fetch", async () => {
@@ -212,11 +287,36 @@ function setupIpcHandlers() {
     }
   });
 
+  // Handler: window:minimize
+  // Minimize the window
+  ipcMain.on("window:minimize", () => {
+    if (mainWindow) {
+      mainWindow.minimize();
+    }
+  });
+
+  // Handler: window:maximize
+  // Maximize/restore the window
+  ipcMain.on("window:maximize", () => {
+    if (mainWindow) {
+      if (mainWindow.isMaximized()) {
+        mainWindow.restore();
+      } else {
+        mainWindow.maximize();
+      }
+    }
+  });
+
   console.log("IPC handlers registered");
 }
 
 app.on("ready", async () => {
   console.log("App ready");
+
+  // Initialize AuthManager
+  // Requirement 10.5: Store authentication tokens securely
+  authManager = new AuthManager();
+  await authManager.initialize();
 
   // Initialize FontManager
   // Requirement 7.1: Create Font Cache Directory

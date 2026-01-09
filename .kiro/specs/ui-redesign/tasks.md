@@ -13,9 +13,9 @@ Cloud Font Agent의 UI를 현대적인 사이드바 네비게이션과 그룹화
   - 로그인 페이지 및 메인 애플리케이션 공통 스타일
   - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 9.1_
 
-- [ ] 1.5. 로그인 페이지 구현
+- [x] 1.5. 로그인 페이지 구현
 
-  - [ ] 1.5.1 LoginPage HTML 구조 및 스타일 작성
+  - [x] 1.5.1 LoginPage HTML 구조 및 스타일 작성
 
     - 중앙 정렬 레이아웃
     - "Kerning City" 타이틀
@@ -24,14 +24,14 @@ Cloud Font Agent의 UI를 현대적인 사이드바 네비게이션과 그룹화
     - 회원가입/아이디 찾기 링크
     - _Requirements: 9.1, 9.2, 9.3, 9.4_
 
-  - [ ] 1.5.2 LoginForm 로직 구현
+  - [x] 1.5.2 LoginForm 로직 구현
 
     - 이메일 형식 검증
     - 로그인 버튼 활성화/비활성화
     - 에러 메시지 표시
     - _Requirements: 10.2, 10.4_
 
-  - [ ] 1.5.3 인증 API 연동
+  - [x] 1.5.3 인증 API 연동
     - 로그인 요청 처리
     - 토큰 저장
     - 메인 페이지로 전환
@@ -60,16 +60,16 @@ Cloud Font Agent의 UI를 현대적인 사이드바 네비게이션과 그룹화
   - 에러 처리 테스트
   - _Requirements: 9.1, 9.2, 9.3, 9.4, 10.1, 10.2, 10.4_
 
-- [ ] 1.6. OAuth 버튼 준비 (미래 확장)
+- [x] 1.6. OAuth 버튼 준비 (미래 확장)
 
-  - [ ] 1.6.1 OAuthButtons 컴포넌트 구조 작성
+  - [x] 1.6.1 OAuthButtons 컴포넌트 구조 작성
     - Google, Apple, Naver 버튼 레이아웃
     - 비활성화 상태로 표시 (준비 중)
     - _Requirements: 9.5_
 
-- [ ] 2. Header 컴포넌트 구현
+- [x] 2. Header 컴포넌트 구현
 
-  - [ ] 2.1 Header HTML 구조 및 스타일 작성
+  - [x] 2.1 Header HTML 구조 및 스타일 작성
     - macOS 윈도우 컨트롤 버튼 추가
     - "Kerning City" 타이틀 중앙 배치
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
@@ -80,7 +80,7 @@ Cloud Font Agent의 UI를 현대적인 사이드바 네비게이션과 그룹화
   - 타이틀 표시 테스트
   - _Requirements: 6.1, 6.2_
 
-- [ ] 3. Sidebar 컴포넌트 구현
+- [-] 3. Sidebar 컴포넌트 구현
 
   - [ ] 3.1 Sidebar HTML 구조 및 스타일 작성
 

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Header Component Test</title>
+    <link rel="stylesheet" href="styles/variables.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/layout.css" />
+    <link rel="stylesheet" href="styles/components.css" />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .test-container {
+        padding-top: var(--header-height);
+        padding: var(--spacing-xl);
+      }
+      .test-info {
+        background: var(--color-background);
+        padding: var(--spacing-xl);
+        border-radius: var(--radius-lg);
+        margin-top: calc(var(--header-height) + var(--spacing-xl));
+      }
+      .test-info h2 {
+        margin-bottom: var(--spacing-md);
+      }
+      .test-info ul {
+        list-style: none;
+        padding: 0;
+      }
+      .test-info li {
+        padding: var(--spacing-sm) 0;
+        border-bottom: 1px solid var(--color-border-light);
+      }
+      .test-info li:last-child {
+        border-bottom: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <div class="test-container">
+      <div class="test-info">
+        <h2>Header Component Test</h2>
+        <ul>
+          <li>
+            ✓ macOS window controls (close, minimize, maximize) on the left
+          </li>
+          <li>✓ "Kerning City" title centered</li>
+          <li>✓ Fixed at the top with proper styling</li>
+          <li>✓ Light background with border</li>
+          <li>✓ Proper z-index for layering</li>
+        </ul>
+        <p
+          style="
+            margin-top: var(--spacing-lg);
+            color: var(--color-text-secondary);
+          "
+        >
+          Note: Window control buttons are functional but require Electron
+          environment to work properly.
+        </p>
+      </div>
+    </div>
+
+    <script type="module">
+      // Import the Header component
+      import { Header } from "./components/Header.js";
+
+      // Create and mount the header
+      const header = new Header({
+        title: "Kerning City",
+      });
+
+      const appContainer = document.getElementById("app");
+      header.mount(appContainer);
+
+      console.log("Header component mounted successfully");
+    </script>
+  </body>
+</html>
