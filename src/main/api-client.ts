@@ -261,11 +261,9 @@ export class FontAPIClient {
   ): Promise<PurchasedFont> {
     const stats = await fs.promises.stat(filePath);
 
-    // Generate font ID from provider and filename
-    const fontId = `${providerName}-${path.basename(
-      filename,
-      path.extname(filename)
-    )}`;
+    // Generate font ID from provider and filename (including extension to avoid duplicates)
+    // Example: "피플퍼스트-PeoplefirstFighting-Regular.ttf"
+    const fontId = `${providerName}-${path.basename(filename)}`;
 
     // Use metadata name if available, otherwise extract from filename
     const fontName = fontMeta?.name || this.extractFontName(filename);

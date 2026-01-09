@@ -89,12 +89,14 @@ export class FontManager {
    *
    * @param filePath - Absolute path to the font file
    * @param fontName - Name of the font
+   * @param fontId - Unique identifier for the font (optional, will be generated from filePath if not provided)
    * @returns RegisteredFont object with registration details
    * @throws Error if registration fails
    */
   async registerFont(
     filePath: string,
-    fontName: string
+    fontName: string,
+    fontId?: string
   ): Promise<RegisteredFont> {
     try {
       // Verify file exists
@@ -114,9 +116,12 @@ export class FontManager {
         throw new Error(`Failed to register font: ${fontName}`);
       }
 
+      // Use provided fontId or generate from filename (including extension)
+      const id = fontId || path.basename(filePath);
+
       // Create registered font record
       const registeredFont: RegisteredFont = {
-        id: path.basename(filePath, path.extname(filePath)),
+        id: id,
         name: fontName,
         filePath: filePath,
         registeredAt: new Date(),

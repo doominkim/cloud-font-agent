@@ -362,8 +362,8 @@ function setupIpcHandlers() {
         await fs.promises.writeFile(cacheFilePath, fontData);
         console.log(`Font file cached at: ${cacheFilePath}`);
 
-        // Register font with system
-        await fontManager.registerFont(cacheFilePath, fontName);
+        // Register font with system (pass fontId to maintain consistency)
+        await fontManager.registerFont(cacheFilePath, fontName, fontId);
 
         console.log(`Font registered successfully: ${fontName}`);
         return { success: true, message: "Font registered successfully" };
