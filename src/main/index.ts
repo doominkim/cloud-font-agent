@@ -24,8 +24,8 @@ let authManager: AuthManager | null = null;
 function createWindow() {
   // Requirements 5.1, 5.2, 5.3, 5.4, 5.5
   mainWindow = new BrowserWindow({
-    width: 400, // Requirement 5.1: 400px width
-    height: 600, // Requirement 5.1: 600px height
+    width: 491, // Figma design width
+    height: 864, // Figma design height
     show: false,
     frame: false, // Frameless window for widget style
     resizable: false, // Cannot resize
