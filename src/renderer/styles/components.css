@@ -619,7 +619,7 @@
 
 /* Font List */
 .font-list {
-  display: flex;
+  /* display: flex; */
   flex-direction: column;
   gap: var(--spacing-lg);
   padding: var(--spacing-lg);
