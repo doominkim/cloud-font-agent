@@ -8,7 +8,9 @@
     "build:ts": "tsc",
     "copy:assets": "cp src/renderer/index.html dist/renderer/ && cp -r src/renderer/styles dist/renderer/ && cp src/renderer/login.html dist/renderer/ && cp src/renderer/login.js dist/renderer/ && mkdir -p dist/fonts && cp -r fonts/* dist/fonts/ 2>/dev/null || true",
     "build:native": "node-gyp rebuild",
-    "dev": "npm run build:ts && npm run copy:assets && electron .",
+    "dev": "NODE_ENV=development npm run build:ts && npm run copy:assets && electron .",
+    "watch": "tsc --watch",
+    "watch:assets": "while true; do fswatch -1 src/renderer/**/*.{html,css,js} && npm run copy:assets && echo 'Assets copied. Restart Electron to see changes.'; done",
     "start": "electron .",
     "package:mac": "electron-builder --mac",
     "clean": "rm -rf dist node_modules"
@@ -24,6 +26,7 @@
     "@types/node": "^20.10.0",
     "electron": "^28.0.0",
     "electron-builder": "^24.9.1",
+    "electron-reload": "^2.0.0-alpha.1",
     "typescript": "^5.3.3"
   },
   "dependencies": {

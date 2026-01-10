@@ -16,6 +16,25 @@ import { SyncManager } from "./sync-manager";
 import { FontAPIClient } from "./api-client";
 import { AuthManager } from "./auth-manager";
 
+// Enable hot reload in development
+if (process.env.NODE_ENV !== "production") {
+  try {
+    require("electron-reload")(__dirname, {
+      electron: path.join(
+        __dirname,
+        "..",
+        "..",
+        "node_modules",
+        ".bin",
+        "electron"
+      ),
+      hardResetMethod: "exit",
+    });
+  } catch (err) {
+    console.log("electron-reload not available");
+  }
+}
+
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let fontManager: FontManager | null = null;
