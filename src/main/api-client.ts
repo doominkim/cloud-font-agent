@@ -33,18 +33,10 @@ interface ProviderInfo {
     name: string;
     weight?: string;
     style?: string;
-    // New structure with versions
-    versions?: Array<{
+    format: "truetype" | "opentype";
+    versions: Array<{
       version: string;
-      files: Array<{
-        file: string;
-        format: "truetype" | "opentype";
-      }>;
-    }>;
-    // Legacy structure without versions
-    files?: Array<{
       file: string;
-      format: "truetype" | "opentype";
     }>;
   }>;
 }
@@ -198,66 +190,34 @@ export class FontAPIClient {
       const files = await fs.promises.readdir(providerPath);
       const fonts: PurchasedFont[] = [];
 
-      // If we have provider info with new structure (versions), use it
+      // If we have provider info with fonts array, use it
       if (providerInfo && providerInfo.fonts) {
         for (const fontMeta of providerInfo.fonts) {
-          // Check if font has versions array (new structure)
-          if (fontMeta.versions && fontMeta.versions.length > 0) {
-            // Process each version
-            for (const versionInfo of fontMeta.versions) {
-              // Process each file format for this version
-              for (const fileInfo of versionInfo.files) {
-                const filePath = path.join(providerPath, fileInfo.file);
+          // Process each version
+          for (const versionInfo of fontMeta.versions) {
+            const filePath = path.join(providerPath, versionInfo.file);
 
-                // Check if file exists
-                try {
-                  await fs.promises.access(filePath);
-                } catch {
-                  console.warn(
-                    `  ${providerName}: File not found: ${fileInfo.file}`
-                  );
-                  continue;
-                }
-
-                const fontInfo = await this.createFontInfo(
-                  filePath,
-                  fileInfo.file,
-                  providerName,
-                  providerInfo,
-                  fontMeta,
-                  fileInfo.format,
-                  versionInfo.version
-                );
-
-                fonts.push(fontInfo);
-              }
-            }
-          } else if (fontMeta.files && fontMeta.files.length > 0) {
-            // Legacy structure: files directly under font (no versions)
-            for (const fileInfo of fontMeta.files) {
-              const filePath = path.join(providerPath, fileInfo.file);
-
-              // Check if file exists
-              try {
-                await fs.promises.access(filePath);
-              } catch {
-                console.warn(
-                  `  ${providerName}: File not found: ${fileInfo.file}`
-                );
-                continue;
-              }
-
-              const fontInfo = await this.createFontInfo(
-                filePath,
-                fileInfo.file,
-                providerName,
-                providerInfo,
-                fontMeta,
-                fileInfo.format
+            // Check if file exists
+            try {
+              await fs.promises.access(filePath);
+            } catch {
+              console.warn(
+                `  ${providerName}: File not found: ${versionInfo.file}`
               );
-
-              fonts.push(fontInfo);
+              continue;
             }
+
+            const fontInfo = await this.createFontInfo(
+              filePath,
+              versionInfo.file,
+              providerName,
+              providerInfo,
+              fontMeta,
+              fontMeta.format,
+              versionInfo.version
+            );
+
+            fonts.push(fontInfo);
           }
         }
       } else {

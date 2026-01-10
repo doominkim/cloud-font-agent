@@ -520,22 +520,32 @@
             };
           }
 
-          // Group by font family (same font name, different versions/formats)
+          // Group by font family AND format (to separate TTF and OTF)
           const fontFamily = font.fontFamily || font.name;
-          if (!groups[providerId].fontFamilies[fontFamily]) {
-            groups[providerId].fontFamilies[fontFamily] = {
+          const format = font.format || "truetype";
+          const formatLabel = format === "opentype" ? "OTF" : "TTF";
+          // Create unique key with format
+          const fontFamilyKey = `${fontFamily}-${format}`;
+
+          if (!groups[providerId].fontFamilies[fontFamilyKey]) {
+            groups[providerId].fontFamilies[fontFamilyKey] = {
               name: fontFamily,
+              format: format,
+              displayName: `${fontFamily} (${formatLabel})`,
               versions: {}, // Group by version
             };
           }
 
           // Group by version
           const version = font.version || "v1.0";
-          if (!groups[providerId].fontFamilies[fontFamily].versions[version]) {
-            groups[providerId].fontFamilies[fontFamily].versions[version] = [];
+          if (
+            !groups[providerId].fontFamilies[fontFamilyKey].versions[version]
+          ) {
+            groups[providerId].fontFamilies[fontFamilyKey].versions[version] =
+              [];
           }
 
-          groups[providerId].fontFamilies[fontFamily].versions[version].push(
+          groups[providerId].fontFamilies[fontFamilyKey].versions[version].push(
             font
           );
         });
@@ -639,11 +649,13 @@
               .replace(/\s+(Regular|Bold|Light|Medium|Italic|Normal)$/i, "")
               .trim();
 
-            // Generate unique ID for this font family
+            // Generate unique ID for this font family (include format to separate TTF/OTF)
+            const formatSuffix =
+              fontFamily.format === "opentype" ? "OTF" : "TTF";
             const fontFamilyId = `${group.id}-${fontFamilyName.replace(
               /\s+/g,
               "-"
-            )}`;
+            )}-${formatSuffix}`;
 
             html += `
               <div class="font-item" data-font-family-id="${fontFamilyId}">
@@ -654,7 +666,7 @@
                 </div>
                 <div class="font-item__info">
                   <div class="font-item__name" style="font-family: '${fontFamilyName}', sans-serif;">${
-              fontFamily.name
+              fontFamily.displayName || fontFamily.name
             }</div>
                 </div>
                 <div class="font-item__version">
@@ -672,7 +684,7 @@
                         .join("")}
                     </select>
                   `
-                      : `<span class="version-label">${defaultVersion}</span>`
+                      : ``
                   }
                 </div>
                 <div class="font-item__toggle">
@@ -812,9 +824,10 @@
 
             // Find fonts matching this font family and version
             const matchingFonts = allFonts.filter((f) => {
+              const fFormatSuffix = f.format === "opentype" ? "OTF" : "TTF";
               const fFamilyId = `${f.provider}-${(
                 f.fontFamily || f.name
-              ).replace(/\s+/g, "-")}`;
+              ).replace(/\s+/g, "-")}-${fFormatSuffix}`;
               return fFamilyId === fontFamilyId && f.version === currentVersion;
             });
 

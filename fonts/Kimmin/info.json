@@ -9,14 +9,23 @@
       "name": "Hola Light",
       "weight": "Light",
       "style": "Normal",
-      "files": [
+      "format": "truetype",
+      "versions": [
         {
-          "file": "HolaTTF-Light.ttf",
-          "format": "truetype"
-        },
+          "version": "v1.0",
+          "file": "HolaTTF-Light.ttf"
+        }
+      ]
+    },
+    {
+      "name": "Hola Light",
+      "weight": "Light",
+      "style": "Normal",
+      "format": "opentype",
+      "versions": [
         {
-          "file": "Hola-Light.otf",
-          "format": "opentype"
+          "version": "v1.0",
+          "file": "Hola-Light.otf"
         }
       ]
     }
