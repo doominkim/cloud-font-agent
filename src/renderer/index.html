@@ -188,21 +188,85 @@
         background: #f5f5f7;
       }
 
-      /* Version dropdown */
-      .version-dropdown {
-        background: #e8e8ed;
-        border: none;
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-size: 12px;
-        color: #1d1d1f;
-        cursor: pointer;
+      /* Custom Version Dropdown */
+      .custom-dropdown {
+        position: relative;
         width: 100%;
       }
 
-      .version-dropdown:focus {
-        outline: none;
-        background: #d1d1d6;
+      .custom-dropdown__trigger {
+        background: #ffffff;
+        border: 1px solid #e5e5e7;
+        border-radius: 20px;
+        padding: 8px 16px;
+        font-size: 14px;
+        color: #1d1d1f;
+        cursor: pointer;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        box-sizing: border-box;
+        transition: all 0.2s ease;
+      }
+
+      .custom-dropdown__trigger:hover {
+        background: #f5f5f7;
+      }
+
+      .custom-dropdown__trigger-icon {
+        color: #86868b;
+        font-size: 12px;
+        transition: transform 0.2s ease;
+      }
+
+      .custom-dropdown--open .custom-dropdown__trigger-icon {
+        transform: rotate(180deg);
+      }
+
+      .custom-dropdown__menu {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        background: #ffffff;
+        border: 1px solid #e5e5e7;
+        border-radius: 16px;
+        padding: 8px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        display: none;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+
+      .custom-dropdown--open .custom-dropdown__menu {
+        display: block;
+      }
+
+      .custom-dropdown__item {
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #86868b;
+        cursor: pointer;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        text-align: center;
+      }
+
+      .custom-dropdown__item:hover {
+        background: #f5f5f7;
+      }
+
+      .custom-dropdown__item--selected {
+        background: #d4f4dd;
+        color: #1d1d1f;
+        font-weight: 500;
+      }
+
+      .custom-dropdown__item--selected:hover {
+        background: #c5efd0;
       }
 
       .version-label {
@@ -673,16 +737,24 @@
                   ${
                     versions.length > 1
                       ? `
-                    <select class="version-dropdown" data-font-family-id="${fontFamilyId}">
-                      ${versions
-                        .map(
-                          (v) =>
-                            `<option value="${v}" ${
-                              v === defaultVersion ? "selected" : ""
-                            }>${v}</option>`
-                        )
-                        .join("")}
-                    </select>
+                    <div class="custom-dropdown" data-font-family-id="${fontFamilyId}">
+                      <button class="custom-dropdown__trigger" type="button">
+                        <span class="custom-dropdown__value">${defaultVersion}</span>
+                        <span class="custom-dropdown__trigger-icon">▼</span>
+                      </button>
+                      <div class="custom-dropdown__menu">
+                        ${versions
+                          .map(
+                            (v) =>
+                              `<div class="custom-dropdown__item ${
+                                v === defaultVersion
+                                  ? "custom-dropdown__item--selected"
+                                  : ""
+                              }" data-value="${v}">${v}</div>`
+                          )
+                          .join("")}
+                      </div>
+                    </div>
                   `
                       : ``
                   }
@@ -752,34 +824,98 @@
           });
         });
 
-        // Version dropdown change handler
-        const versionDropdowns = document.querySelectorAll(".version-dropdown");
-        console.log("Found version dropdowns:", versionDropdowns.length);
+        // Custom dropdown handlers
+        const customDropdowns = document.querySelectorAll(".custom-dropdown");
+        console.log("Found custom dropdowns:", customDropdowns.length);
 
-        versionDropdowns.forEach((dropdown) => {
-          dropdown.addEventListener("change", (e) => {
-            const fontFamilyId = e.target.dataset.fontFamilyId;
-            const newVersion = e.target.value;
+        customDropdowns.forEach((dropdown) => {
+          const trigger = dropdown.querySelector(".custom-dropdown__trigger");
+          const menu = dropdown.querySelector(".custom-dropdown__menu");
+          const items = dropdown.querySelectorAll(".custom-dropdown__item");
+          const valueDisplay = dropdown.querySelector(
+            ".custom-dropdown__value"
+          );
+          const fontFamilyId = dropdown.dataset.fontFamilyId;
 
-            console.log(`Version changed for ${fontFamilyId} to ${newVersion}`);
+          // Toggle dropdown open/close
+          trigger.addEventListener("click", (e) => {
+            e.stopPropagation();
 
-            // Find the toggle for this font family
-            const toggle = document.querySelector(
-              `.toggle__input[data-font-family-id="${fontFamilyId}"]`
-            );
+            // Close all other dropdowns
+            document.querySelectorAll(".custom-dropdown").forEach((other) => {
+              if (other !== dropdown) {
+                other.classList.remove("custom-dropdown--open");
+              }
+            });
 
-            if (toggle && toggle.checked) {
-              // If toggle is ON, turn it OFF when version changes
-              toggle.checked = false;
+            dropdown.classList.toggle("custom-dropdown--open");
+          });
+
+          // Handle item selection
+          items.forEach((item) => {
+            item.addEventListener("click", async (e) => {
+              e.stopPropagation();
+              const newVersion = item.dataset.value;
+
               console.log(
-                `Disabled toggle for ${fontFamilyId} due to version change`
+                `Version changed for ${fontFamilyId} to ${newVersion}`
               );
-            }
 
-            // Update the toggle's data attributes with new version info
-            // We need to find the new font ID for the selected version
-            // This will be handled when the toggle is turned back on
-            toggle.dataset.currentVersion = newVersion;
+              // Update UI
+              items.forEach((i) =>
+                i.classList.remove("custom-dropdown__item--selected")
+              );
+              item.classList.add("custom-dropdown__item--selected");
+              valueDisplay.textContent = newVersion;
+
+              // Close dropdown
+              dropdown.classList.remove("custom-dropdown--open");
+
+              // Find the toggle for this font family
+              const toggle = document.querySelector(
+                `.toggle__input[data-font-family-id="${fontFamilyId}"]`
+              );
+
+              if (toggle && toggle.checked) {
+                // If toggle is ON, unregister the current font before changing version
+                const currentFontId = toggle.dataset.currentFontId;
+                console.log(
+                  `Unregistering current font ${currentFontId} due to version change`
+                );
+
+                try {
+                  const result = await window.fontAPI.unregisterFont(
+                    currentFontId
+                  );
+                  if (result.success) {
+                    registeredFontIds.delete(currentFontId);
+                    console.log(
+                      `Successfully unregistered font ${currentFontId}`
+                    );
+                  } else {
+                    console.error(`Failed to unregister font: ${result.error}`);
+                  }
+                } catch (error) {
+                  console.error("Error unregistering font:", error);
+                }
+
+                // Turn off the toggle
+                toggle.checked = false;
+                console.log(
+                  `Disabled toggle for ${fontFamilyId} after unregistering`
+                );
+              }
+
+              // Update the toggle's data attributes with new version info
+              toggle.dataset.currentVersion = newVersion;
+            });
+          });
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener("click", () => {
+          document.querySelectorAll(".custom-dropdown").forEach((dropdown) => {
+            dropdown.classList.remove("custom-dropdown--open");
           });
         });
 
