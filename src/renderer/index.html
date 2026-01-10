@@ -163,6 +163,10 @@
       .font-item__toggle {
         flex-shrink: 0;
         order: 4; /* Toggle last */
+        width: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .font-item__name {
@@ -300,6 +304,8 @@
         width: 36px;
         height: 20px;
         flex-shrink: 0;
+        min-width: 36px;
+        max-width: 36px;
       }
 
       .toggle__input {
@@ -319,6 +325,14 @@
         background: #d1d1d6;
         transition: background 0.2s ease-out;
         border-radius: 9999px;
+        width: 36px;
+        height: 20px;
+      }
+
+      .toggle__slider:active {
+        transform: none !important;
+        width: 36px !important;
+        height: 20px !important;
       }
 
       .toggle__slider::before {
@@ -332,6 +346,16 @@
         transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         border-radius: 50%;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      .toggle__slider:active::before {
+        transform: none !important;
+        width: 16px !important;
+        height: 16px !important;
+      }
+
+      .toggle__input:checked + .toggle__slider:active::before {
+        transform: translateX(16px) !important;
       }
 
       .toggle__input:checked + .toggle__slider {
