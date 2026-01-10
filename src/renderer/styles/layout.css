@@ -165,6 +165,10 @@
   align-items: center;
   gap: 32px;
   padding: 0;
+  min-height: calc(100vh - 80px);
+  justify-content: flex-start;
+  padding-top: 20vh;
+  position: relative;
 }
 
 .login-page__title {
@@ -187,9 +191,13 @@
 
 .login-page__links {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 16px;
   width: 100%;
-  margin-top: 16px;
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  right: 0;
 }
 
 .login-page__oauth {
