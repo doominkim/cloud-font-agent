@@ -9,14 +9,19 @@
       "name": "피플퍼스트 파이팅",
       "weight": "Regular",
       "style": "Normal",
-      "files": [
+      "versions": [
         {
-          "file": "PeoplefirstFighting-Regular.ttf",
-          "format": "truetype"
-        },
-        {
-          "file": "PeoplefirstFighting-Regular.otf",
-          "format": "opentype"
+          "version": "v0.3-beta",
+          "files": [
+            {
+              "file": "PeoplefirstFighting-Regular.ttf",
+              "format": "truetype"
+            },
+            {
+              "file": "PeoplefirstFighting-Regular.otf",
+              "format": "opentype"
+            }
+          ]
         }
       ]
     },
@@ -24,14 +29,19 @@
       "name": "피플퍼스트 IL",
       "weight": "Regular",
       "style": "Normal",
-      "files": [
+      "versions": [
         {
-          "file": "PeoplefirstILTTF.ttf",
-          "format": "truetype"
-        },
-        {
-          "file": "PeoplefirstIL.otf",
-          "format": "opentype"
+          "version": "v1.0",
+          "files": [
+            {
+              "file": "PeoplefirstILTTF.ttf",
+              "format": "truetype"
+            },
+            {
+              "file": "PeoplefirstIL.otf",
+              "format": "opentype"
+            }
+          ]
         }
       ]
     },
@@ -39,14 +49,19 @@
       "name": "피플퍼스트 Neat & Loud",
       "weight": "Regular",
       "style": "Normal",
-      "files": [
+      "versions": [
         {
-          "file": "PeoplefirstNeat&LoudTTF.ttf",
-          "format": "truetype"
-        },
-        {
-          "file": "PeoplefirstNeat&Loud.otf",
-          "format": "opentype"
+          "version": "v1.0",
+          "files": [
+            {
+              "file": "PeoplefirstNeat&LoudTTF.ttf",
+              "format": "truetype"
+            },
+            {
+              "file": "PeoplefirstNeat&Loud.otf",
+              "format": "opentype"
+            }
+          ]
         }
       ]
     }

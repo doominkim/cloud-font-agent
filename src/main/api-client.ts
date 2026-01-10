@@ -15,6 +15,9 @@ export interface PurchasedFont {
   provider?: string; // Provider/vendor name
   displayName?: string; // Display name for provider
   previewFont?: string; // Font to use for provider preview
+  version?: string; // Font version (e.g., "v0.2-beta")
+  format?: "truetype" | "opentype"; // Font format
+  fontFamily?: string; // Font family name (for grouping versions)
 }
 
 /**
@@ -30,7 +33,16 @@ interface ProviderInfo {
     name: string;
     weight?: string;
     style?: string;
-    files: Array<{
+    // New structure with versions
+    versions?: Array<{
+      version: string;
+      files: Array<{
+        file: string;
+        format: "truetype" | "opentype";
+      }>;
+    }>;
+    // Legacy structure without versions
+    files?: Array<{
       file: string;
       format: "truetype" | "opentype";
     }>;
@@ -186,33 +198,66 @@ export class FontAPIClient {
       const files = await fs.promises.readdir(providerPath);
       const fonts: PurchasedFont[] = [];
 
-      // If we have provider info with new structure, use it
+      // If we have provider info with new structure (versions), use it
       if (providerInfo && providerInfo.fonts) {
         for (const fontMeta of providerInfo.fonts) {
-          // Process each file format for this font
-          for (const fileInfo of fontMeta.files) {
-            const filePath = path.join(providerPath, fileInfo.file);
+          // Check if font has versions array (new structure)
+          if (fontMeta.versions && fontMeta.versions.length > 0) {
+            // Process each version
+            for (const versionInfo of fontMeta.versions) {
+              // Process each file format for this version
+              for (const fileInfo of versionInfo.files) {
+                const filePath = path.join(providerPath, fileInfo.file);
 
-            // Check if file exists
-            try {
-              await fs.promises.access(filePath);
-            } catch {
-              console.warn(
-                `  ${providerName}: File not found: ${fileInfo.file}`
-              );
-              continue;
+                // Check if file exists
+                try {
+                  await fs.promises.access(filePath);
+                } catch {
+                  console.warn(
+                    `  ${providerName}: File not found: ${fileInfo.file}`
+                  );
+                  continue;
+                }
+
+                const fontInfo = await this.createFontInfo(
+                  filePath,
+                  fileInfo.file,
+                  providerName,
+                  providerInfo,
+                  fontMeta,
+                  fileInfo.format,
+                  versionInfo.version
+                );
+
+                fonts.push(fontInfo);
+              }
             }
+          } else if (fontMeta.files && fontMeta.files.length > 0) {
+            // Legacy structure: files directly under font (no versions)
+            for (const fileInfo of fontMeta.files) {
+              const filePath = path.join(providerPath, fileInfo.file);
 
-            const fontInfo = await this.createFontInfo(
-              filePath,
-              fileInfo.file,
-              providerName,
-              providerInfo,
-              fontMeta,
-              fileInfo.format
-            );
+              // Check if file exists
+              try {
+                await fs.promises.access(filePath);
+              } catch {
+                console.warn(
+                  `  ${providerName}: File not found: ${fileInfo.file}`
+                );
+                continue;
+              }
 
-            fonts.push(fontInfo);
+              const fontInfo = await this.createFontInfo(
+                filePath,
+                fileInfo.file,
+                providerName,
+                providerInfo,
+                fontMeta,
+                fileInfo.format
+              );
+
+              fonts.push(fontInfo);
+            }
           }
         }
       } else {
@@ -257,7 +302,8 @@ export class FontAPIClient {
     providerName: string,
     providerInfo: ProviderInfo | null = null,
     fontMeta?: { name: string; weight?: string; style?: string },
-    format?: "truetype" | "opentype"
+    format?: "truetype" | "opentype",
+    version?: string
   ): Promise<PurchasedFont> {
     const stats = await fs.promises.stat(filePath);
 
@@ -280,6 +326,9 @@ export class FontAPIClient {
       provider: providerName,
       displayName: displayName,
       previewFont: previewFont,
+      version: version,
+      format: format,
+      fontFamily: fontName, // Use font name as family for grouping
     };
   }
 

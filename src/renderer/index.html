@@ -131,13 +131,32 @@
         background: transparent;
         width: calc(100% - 12px);
         box-sizing: border-box;
+        gap: 8px;
+      }
+
+      .font-item__actions {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        order: 1; /* Info button first */
       }
 
       .font-item__info {
         flex: 1;
         min-width: 0;
-        margin-right: 16px;
         overflow: hidden;
+        order: 2; /* Font name second */
+      }
+
+      .font-item__version {
+        flex-shrink: 0;
+        order: 3; /* Version dropdown third */
+        min-width: 100px;
+      }
+
+      .font-item__toggle {
+        flex-shrink: 0;
+        order: 4; /* Toggle last */
       }
 
       .font-item__name {
@@ -147,14 +166,6 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-      }
-
-      .font-item__actions {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-shrink: 0;
-        min-width: 64px; /* Reduced from 76px for smaller toggle */
       }
 
       .font-item__info-btn {
@@ -170,10 +181,34 @@
         padding: 0;
         cursor: pointer;
         flex-shrink: 0;
+        border: none;
       }
 
       .font-item__info-btn:hover {
         background: #f5f5f7;
+      }
+
+      /* Version dropdown */
+      .version-dropdown {
+        background: #e8e8ed;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        color: #1d1d1f;
+        cursor: pointer;
+        width: 100%;
+      }
+
+      .version-dropdown:focus {
+        outline: none;
+        background: #d1d1d6;
+      }
+
+      .version-label {
+        font-size: 12px;
+        color: #86868b;
+        padding: 4px 8px;
       }
 
       /* Toggle Switch - Smaller version */
@@ -465,7 +500,7 @@
         });
       }
 
-      // Group fonts by provider
+      // Group fonts by provider and then by font family
       // Uses provider metadata from API (info.json)
       function groupFontsByProvider(fonts) {
         const groups = {};
@@ -481,11 +516,28 @@
               id: providerId,
               displayName: displayName,
               previewFont: previewFont,
-              fonts: [],
+              fontFamilies: {}, // Group by font family
             };
           }
 
-          groups[providerId].fonts.push(font);
+          // Group by font family (same font name, different versions/formats)
+          const fontFamily = font.fontFamily || font.name;
+          if (!groups[providerId].fontFamilies[fontFamily]) {
+            groups[providerId].fontFamilies[fontFamily] = {
+              name: fontFamily,
+              versions: {}, // Group by version
+            };
+          }
+
+          // Group by version
+          const version = font.version || "v1.0";
+          if (!groups[providerId].fontFamilies[fontFamily].versions[version]) {
+            groups[providerId].fontFamilies[fontFamily].versions[version] = [];
+          }
+
+          groups[providerId].fontFamilies[fontFamily].versions[version].push(
+            font
+          );
         });
 
         return Object.values(groups);
@@ -552,29 +604,84 @@
               }">
           `;
 
-          group.fonts.forEach((font) => {
-            const isEnabled = registeredFontIds.has(font.id);
+          // Iterate through font families
+          Object.values(group.fontFamilies).forEach((fontFamily) => {
+            // Get all versions for this font family
+            const versions = Object.keys(fontFamily.versions).sort().reverse(); // Latest first
+
+            // Find if any version is currently registered
+            let activeVersion = null;
+            let activeFont = null;
+            for (const version of versions) {
+              const fontsInVersion = fontFamily.versions[version];
+              for (const font of fontsInVersion) {
+                if (registeredFontIds.has(font.id)) {
+                  activeVersion = version;
+                  activeFont = font;
+                  break;
+                }
+              }
+              if (activeVersion) break;
+            }
+
+            // Default to latest version if none is active
+            const defaultVersion = activeVersion || versions[0];
+            const defaultFonts = fontFamily.versions[defaultVersion];
+            const defaultFont = defaultFonts[0]; // Pick first format (TTF/OTF)
+
+            // Check if this font is enabled
+            const isEnabled = activeFont
+              ? registeredFontIds.has(activeFont.id)
+              : false;
 
             // Extract font family name for styling
-            const fontFamily = font.name
+            const fontFamilyName = fontFamily.name
               .replace(/\s+(Regular|Bold|Light|Medium|Italic|Normal)$/i, "")
               .trim();
 
+            // Generate unique ID for this font family
+            const fontFamilyId = `${group.id}-${fontFamilyName.replace(
+              /\s+/g,
+              "-"
+            )}`;
+
             html += `
-              <div class="font-item" data-font-id="${font.id}">
-                <div class="font-item__info">
-                  <div class="font-item__name" style="font-family: '${fontFamily}', sans-serif;">${
-              font.name
-            }</div>
-                </div>
+              <div class="font-item" data-font-family-id="${fontFamilyId}">
                 <div class="font-item__actions">
                   <button class="font-item__info-btn" data-font-id="${
-                    font.id
+                    defaultFont.id
                   }">ⓘ</button>
-                  <label class="toggle" for="toggle-${font.id}">
-                    <input type="checkbox" class="toggle__input" id="toggle-${
-                      font.id
-                    }" ${isEnabled ? "checked" : ""} data-font-id="${font.id}">
+                </div>
+                <div class="font-item__info">
+                  <div class="font-item__name" style="font-family: '${fontFamilyName}', sans-serif;">${
+              fontFamily.name
+            }</div>
+                </div>
+                <div class="font-item__version">
+                  ${
+                    versions.length > 1
+                      ? `
+                    <select class="version-dropdown" data-font-family-id="${fontFamilyId}">
+                      ${versions
+                        .map(
+                          (v) =>
+                            `<option value="${v}" ${
+                              v === defaultVersion ? "selected" : ""
+                            }>${v}</option>`
+                        )
+                        .join("")}
+                    </select>
+                  `
+                      : `<span class="version-label">${defaultVersion}</span>`
+                  }
+                </div>
+                <div class="font-item__toggle">
+                  <label class="toggle" for="toggle-${fontFamilyId}">
+                    <input type="checkbox" class="toggle__input" id="toggle-${fontFamilyId}" ${
+              isEnabled ? "checked" : ""
+            } data-font-family-id="${fontFamilyId}" data-current-version="${defaultVersion}" data-current-font-id="${
+              activeFont ? activeFont.id : defaultFont.id
+            }">
                     <span class="toggle__slider"></span>
                   </label>
                 </div>
@@ -633,40 +740,99 @@
           });
         });
 
+        // Version dropdown change handler
+        const versionDropdowns = document.querySelectorAll(".version-dropdown");
+        console.log("Found version dropdowns:", versionDropdowns.length);
+
+        versionDropdowns.forEach((dropdown) => {
+          dropdown.addEventListener("change", (e) => {
+            const fontFamilyId = e.target.dataset.fontFamilyId;
+            const newVersion = e.target.value;
+
+            console.log(`Version changed for ${fontFamilyId} to ${newVersion}`);
+
+            // Find the toggle for this font family
+            const toggle = document.querySelector(
+              `.toggle__input[data-font-family-id="${fontFamilyId}"]`
+            );
+
+            if (toggle && toggle.checked) {
+              // If toggle is ON, turn it OFF when version changes
+              toggle.checked = false;
+              console.log(
+                `Disabled toggle for ${fontFamilyId} due to version change`
+              );
+            }
+
+            // Update the toggle's data attributes with new version info
+            // We need to find the new font ID for the selected version
+            // This will be handled when the toggle is turned back on
+            toggle.dataset.currentVersion = newVersion;
+          });
+        });
+
         // Toggle switches - Font registration/unregistration
         const toggleInputs = document.querySelectorAll(".toggle__input");
         console.log("Found toggle inputs:", toggleInputs.length);
 
         toggleInputs.forEach((toggle, index) => {
+          const fontFamilyId = toggle.dataset.fontFamilyId;
           console.log(
-            `Setting up toggle ${index}, fontId:`,
-            toggle.dataset.fontId
+            `Setting up toggle ${index}, fontFamilyId:`,
+            fontFamilyId
           );
 
           // Add click listener to the label for debugging
           const label = toggle.closest(".toggle");
           if (label) {
             label.addEventListener("click", (e) => {
-              console.log("Label clicked for font:", toggle.dataset.fontId);
+              console.log("Label clicked for font family:", fontFamilyId);
             });
           }
 
           toggle.addEventListener("change", async (e) => {
             const target = e.target;
-            const fontId = target.dataset.fontId;
+            const fontFamilyId = target.dataset.fontFamilyId;
             const isEnabled = target.checked;
+            const currentVersion = target.dataset.currentVersion;
 
-            console.log("Toggle clicked:", fontId, isEnabled);
+            console.log(
+              "Toggle clicked:",
+              fontFamilyId,
+              isEnabled,
+              "version:",
+              currentVersion
+            );
 
-            // Find the font
-            const font = allFonts.find((f) => f.id === fontId);
-            if (!font) {
-              console.error("Font not found:", fontId);
+            // Find the font for the current version
+            // We need to search through allFonts to find the right one
+            const fontItem = target.closest(".font-item");
+            const providerGroup = fontItem.closest(".provider-group");
+            const providerId = providerGroup.dataset.providerId;
+
+            // Find fonts matching this font family and version
+            const matchingFonts = allFonts.filter((f) => {
+              const fFamilyId = `${f.provider}-${(
+                f.fontFamily || f.name
+              ).replace(/\s+/g, "-")}`;
+              return fFamilyId === fontFamilyId && f.version === currentVersion;
+            });
+
+            if (matchingFonts.length === 0) {
+              console.error(
+                "No fonts found for:",
+                fontFamilyId,
+                currentVersion
+              );
               target.checked = !isEnabled; // Revert
               return;
             }
 
-            console.log("Font found:", font);
+            // Pick the first matching font (prefer TTF over OTF)
+            const font =
+              matchingFonts.find((f) => f.format === "truetype") ||
+              matchingFonts[0];
+            console.log("Selected font:", font);
 
             // Disable toggle during operation
             target.disabled = true;
@@ -676,7 +842,7 @@
                 // Register font
                 console.log("Registering font:", font.name, font.downloadUrl);
                 const result = await window.fontAPI.registerFont(
-                  fontId,
+                  font.id,
                   font.downloadUrl,
                   font.name
                 );
@@ -684,21 +850,25 @@
                 console.log("Register result:", result);
 
                 if (result.success) {
-                  registeredFontIds.add(fontId);
+                  registeredFontIds.add(font.id);
+                  target.dataset.currentFontId = font.id;
                   console.log("Font registered successfully:", font.name);
                 } else {
                   throw new Error(result.error || "Registration failed");
                 }
               } else {
                 // Unregister font
-                console.log("Unregistering font:", fontId);
-                const result = await window.fontAPI.unregisterFont(fontId);
+                const fontIdToUnregister = target.dataset.currentFontId;
+                console.log("Unregistering font:", fontIdToUnregister);
+                const result = await window.fontAPI.unregisterFont(
+                  fontIdToUnregister
+                );
 
                 console.log("Unregister result:", result);
 
                 if (result.success) {
-                  registeredFontIds.delete(fontId);
-                  console.log("Font unregistered successfully:", font.name);
+                  registeredFontIds.delete(fontIdToUnregister);
+                  console.log("Font unregistered successfully");
                 } else {
                   throw new Error(result.error || "Unregistration failed");
                 }

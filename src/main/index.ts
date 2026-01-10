@@ -44,16 +44,14 @@ function createWindow() {
 
   // Check if user is authenticated
   // Requirement 10.1: Navigate to main app if authenticated, otherwise show login
-  // DEV MODE: Skip authentication check in development
-  const isDevelopment = !app.isPackaged;
-  const skipAuth = process.env.SKIP_AUTH === "true" || isDevelopment;
+  // DEV MODE: Set SKIP_AUTH=true environment variable to skip authentication
+  const skipAuth = process.env.SKIP_AUTH === "true";
 
-  if (skipAuth || (authManager && authManager.isAuthenticated())) {
-    console.log(
-      skipAuth
-        ? "DEV MODE: Skipping authentication"
-        : "User authenticated, loading main app"
-    );
+  if (skipAuth) {
+    console.log("DEV MODE: Skipping authentication (SKIP_AUTH=true)");
+    mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
+  } else if (authManager && authManager.isAuthenticated()) {
+    console.log("User authenticated, loading main app");
     mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
   } else {
     console.log("User not authenticated, loading login page");
